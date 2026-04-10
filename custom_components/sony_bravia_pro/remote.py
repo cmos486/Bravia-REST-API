@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Iterable
 import logging
 from typing import Any
@@ -30,7 +31,11 @@ async def async_setup_entry(
 
 
 class BraviaRemote(BraviaEntity, RemoteEntity):
-    """Sony Bravia Pro remote control entity."""
+    """Sony Bravia Pro remote control entity.
+
+    This entity is always on — it represents the command sender,
+    not the TV power state. Power control is handled by the media_player.
+    """
 
     _attr_translation_key = "remote"
     _attr_name = "Remote"
@@ -46,14 +51,12 @@ class BraviaRemote(BraviaEntity, RemoteEntity):
 
     @property
     def is_on(self) -> bool:
-        """Return True if the TV is on."""
-        data = self.coordinator.data
-        return data.is_on if data else False
+        """Always on — the remote is a command sender, not a power toggle."""
+        return True
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return available IRCC commands as an attribute."""
-        # Merge TV-discovered codes with predefined fallbacks
         all_commands = set(IRCC_CODES.keys()) | set(self.coordinator.ircc_codes.keys())
         return {
             "available_commands": sorted(all_commands),
@@ -61,20 +64,10 @@ class BraviaRemote(BraviaEntity, RemoteEntity):
         }
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the TV on."""
-        try:
-            await self.coordinator.client.power_on()
-        except BraviaError as err:
-            _LOGGER.error("Failed to turn on: %s", err)
-        await self.coordinator.async_request_refresh()
+        """No-op — remote is always on."""
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the TV off."""
-        try:
-            await self.coordinator.client.power_off()
-        except BraviaError as err:
-            _LOGGER.error("Failed to turn off: %s", err)
-        await self.coordinator.async_request_refresh()
+        """No-op — remote is always on."""
 
     async def async_send_command(
         self,
@@ -93,10 +86,8 @@ class BraviaRemote(BraviaEntity, RemoteEntity):
             for cmd in command:
                 try:
                     if cmd.endswith("==") or cmd.endswith("Aw=="):
-                        # Looks like a raw IRCC code
                         await self.coordinator.client.send_ircc(cmd)
                     else:
-                        # Look up by name: TV-discovered first, then predefined fallback
                         code = (
                             self.coordinator.ircc_codes.get(cmd)
                             or IRCC_CODES.get(cmd)
@@ -112,5 +103,4 @@ class BraviaRemote(BraviaEntity, RemoteEntity):
                     _LOGGER.error("Failed to send IRCC command '%s': %s", cmd, err)
 
             if delay_secs > 0 and num_repeats > 1:
-                import asyncio
                 await asyncio.sleep(delay_secs)

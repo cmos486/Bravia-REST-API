@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .bravia_client import BraviaClient, BraviaError
-from .const import DOMAIN, POWER_SAVING_OFF, POWER_SAVING_PICTURE_OFF
+from .const import DOMAIN, IRCC_CODES, POWER_SAVING_OFF, POWER_SAVING_PICTURE_OFF
 from .coordinator import BraviaCoordinator
 from .entity import BraviaEntity
 
@@ -27,7 +27,9 @@ class BraviaButtonDescription(ButtonEntityDescription):
     press_fn: Callable[[BraviaClient], Coroutine[Any, Any, None]]
 
 
-BUTTON_DESCRIPTIONS: tuple[BraviaButtonDescription, ...] = (
+# --- System action buttons ---
+
+SYSTEM_BUTTONS: tuple[BraviaButtonDescription, ...] = (
     BraviaButtonDescription(
         key="reboot",
         translation_key="reboot",
@@ -57,6 +59,136 @@ BUTTON_DESCRIPTIONS: tuple[BraviaButtonDescription, ...] = (
 )
 
 
+# --- IRCC remote command buttons ---
+
+
+def _ircc_press(code: str) -> Callable[[BraviaClient], Coroutine[Any, Any, None]]:
+    """Create a press function that sends a specific IRCC code."""
+    async def _press(client: BraviaClient) -> None:
+        await client.send_ircc(code)
+    return _press
+
+
+IRCC_BUTTONS: tuple[BraviaButtonDescription, ...] = (
+    # Navigation
+    BraviaButtonDescription(
+        key="ircc_home",
+        name="Remote: Home",
+        icon="mdi:home",
+        press_fn=_ircc_press(IRCC_CODES["Home"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_back",
+        name="Remote: Back",
+        icon="mdi:arrow-left",
+        press_fn=_ircc_press(IRCC_CODES["Return"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_up",
+        name="Remote: Up",
+        icon="mdi:chevron-up",
+        press_fn=_ircc_press(IRCC_CODES["Up"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_down",
+        name="Remote: Down",
+        icon="mdi:chevron-down",
+        press_fn=_ircc_press(IRCC_CODES["Down"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_left",
+        name="Remote: Left",
+        icon="mdi:chevron-left",
+        press_fn=_ircc_press(IRCC_CODES["Left"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_right",
+        name="Remote: Right",
+        icon="mdi:chevron-right",
+        press_fn=_ircc_press(IRCC_CODES["Right"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_confirm",
+        name="Remote: OK",
+        icon="mdi:checkbox-marked-circle",
+        press_fn=_ircc_press(IRCC_CODES["Confirm"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_options",
+        name="Remote: Options",
+        icon="mdi:dots-vertical",
+        press_fn=_ircc_press(IRCC_CODES["Options"]),
+    ),
+    # Volume
+    BraviaButtonDescription(
+        key="ircc_volume_up",
+        name="Remote: Volume Up",
+        icon="mdi:volume-plus",
+        press_fn=_ircc_press(IRCC_CODES["VolumeUp"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_volume_down",
+        name="Remote: Volume Down",
+        icon="mdi:volume-minus",
+        press_fn=_ircc_press(IRCC_CODES["VolumeDown"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_mute",
+        name="Remote: Mute",
+        icon="mdi:volume-mute",
+        press_fn=_ircc_press(IRCC_CODES["Mute"]),
+    ),
+    # Channels
+    BraviaButtonDescription(
+        key="ircc_channel_up",
+        name="Remote: Channel Up",
+        icon="mdi:arrow-up-bold",
+        press_fn=_ircc_press(IRCC_CODES["ChannelUp"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_channel_down",
+        name="Remote: Channel Down",
+        icon="mdi:arrow-down-bold",
+        press_fn=_ircc_press(IRCC_CODES["ChannelDown"]),
+    ),
+    # Apps
+    BraviaButtonDescription(
+        key="ircc_netflix",
+        name="Remote: Netflix",
+        icon="mdi:netflix",
+        press_fn=_ircc_press(IRCC_CODES["Netflix"]),
+    ),
+    # Playback
+    BraviaButtonDescription(
+        key="ircc_play",
+        name="Remote: Play",
+        icon="mdi:play",
+        press_fn=_ircc_press(IRCC_CODES["Play"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_pause",
+        name="Remote: Pause",
+        icon="mdi:pause",
+        press_fn=_ircc_press(IRCC_CODES["Pause"]),
+    ),
+    BraviaButtonDescription(
+        key="ircc_stop",
+        name="Remote: Stop",
+        icon="mdi:stop",
+        press_fn=_ircc_press(IRCC_CODES["Stop"]),
+    ),
+    # Input
+    BraviaButtonDescription(
+        key="ircc_input",
+        name="Remote: Input",
+        icon="mdi:import",
+        press_fn=_ircc_press(IRCC_CODES["Input"]),
+    ),
+)
+
+ALL_BUTTONS = SYSTEM_BUTTONS + IRCC_BUTTONS
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -65,7 +197,7 @@ async def async_setup_entry(
     """Set up Sony Bravia Pro buttons."""
     coordinator: BraviaCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
-        BraviaButton(coordinator, entry, desc) for desc in BUTTON_DESCRIPTIONS
+        BraviaButton(coordinator, entry, desc) for desc in ALL_BUTTONS
     )
 
 
