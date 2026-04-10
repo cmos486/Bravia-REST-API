@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import socket
 from typing import Any
 
 from homeassistant.components.media_player import (
-    BrowseMedia,
     MediaPlayerDeviceClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
-    MediaType,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -24,8 +24,26 @@ from .entity import BraviaEntity
 
 _LOGGER = logging.getLogger(__name__)
 
+# BrowseMedia may not be available in all HA versions
+try:
+    from homeassistant.components.media_player import BrowseMedia
+
+    _HAS_BROWSE_MEDIA = True
+except ImportError:
+    _HAS_BROWSE_MEDIA = False
+
 SOURCE_TYPE_INPUT = "input"
 SOURCE_TYPE_APP = "app"
+
+_BASE_FEATURES = (
+    MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.VOLUME_SET
+    | MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.PLAY_MEDIA
+)
 
 
 async def async_setup_entry(
@@ -42,16 +60,6 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
     """Representation of a Sony Bravia Pro TV as a media player."""
 
     _attr_device_class = MediaPlayerDeviceClass.TV
-    _attr_supported_features = (
-        MediaPlayerEntityFeature.TURN_ON
-        | MediaPlayerEntityFeature.TURN_OFF
-        | MediaPlayerEntityFeature.VOLUME_SET
-        | MediaPlayerEntityFeature.VOLUME_STEP
-        | MediaPlayerEntityFeature.VOLUME_MUTE
-        | MediaPlayerEntityFeature.SELECT_SOURCE
-        | MediaPlayerEntityFeature.PLAY_MEDIA
-        | MediaPlayerEntityFeature.BROWSE_MEDIA
-    )
     _attr_name = None  # Use device name
 
     def __init__(
@@ -61,8 +69,13 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
     ) -> None:
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.unique_id}_media_player"
-        self._sources: dict[str, dict[str, str]] = {}  # name -> {uri, type}
+        self._sources: dict[str, dict[str, str]] = {}
         self._mac = entry.data.get(CONF_MAC)
+
+        features = _BASE_FEATURES
+        if _HAS_BROWSE_MEDIA:
+            features |= MediaPlayerEntityFeature.BROWSE_MEDIA
+        self._attr_supported_features = features
 
     def _build_source_map(self) -> None:
         """Build source map from external inputs and apps."""
@@ -120,7 +133,6 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         uri = data.playing_content.get("uri", "")
         title = data.playing_content.get("title", "")
 
-        # Try to match by URI
         self._build_source_map()
         for name, src in self._sources.items():
             if src["uri"] == uri:
@@ -226,7 +238,7 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         await self.coordinator.async_request_refresh()
 
     async def async_play_media(
-        self, media_type: MediaType | str, media_id: str, **kwargs: Any
+        self, media_type: str, media_id: str, **kwargs: Any
     ) -> None:
         """Play media (launch app or switch input by URI)."""
         try:
@@ -240,12 +252,14 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
 
     async def async_browse_media(
         self,
-        media_content_type: MediaType | str | None = None,
+        media_content_type: str | None = None,
         media_content_id: str | None = None,
-    ) -> BrowseMedia:
+    ) -> Any:
         """Implement media browsing: list apps and inputs."""
+        if not _HAS_BROWSE_MEDIA:
+            raise NotImplementedError("BrowseMedia not available in this HA version")
+
         if media_content_type is None or media_content_id is None:
-            # Root level — show categories
             return BrowseMedia(
                 media_class="directory",
                 media_content_id="root",
@@ -273,7 +287,7 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
                 ],
             )
 
-        children: list[BrowseMedia] = []
+        children = []
         data = self.coordinator.data
 
         if media_content_id == "inputs" and data:
@@ -321,11 +335,13 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         """Send a Wake-on-LAN magic packet."""
         if not self._mac:
             return
-        mac_bytes = bytes.fromhex(self._mac.replace(":", "").replace("-", ""))
-        magic = b"\xff" * 6 + mac_bytes * 16
+        try:
+            mac_bytes = bytes.fromhex(self._mac.replace(":", "").replace("-", ""))
+        except ValueError:
+            _LOGGER.error("Invalid MAC address for WoL: %s", self._mac)
+            return
 
-        import asyncio
-        import socket
+        magic = b"\xff" * 6 + mac_bytes * 16
 
         loop = asyncio.get_running_loop()
         transport, _ = await loop.create_datagram_endpoint(
