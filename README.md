@@ -65,8 +65,6 @@ This integration is significantly more capable than the built-in `braviatv` inte
 4. The integration will validate the connection and auto-discover the TV model
 5. Click **Submit**
 
-> **Note:** The TV must be turned on (not in standby) during initial setup.
-
 ---
 
 ## Entities Created

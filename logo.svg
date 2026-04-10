@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f3460"/>
+      <stop offset="100%" style="stop-color:#1a1a3e"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d2ff"/>
+      <stop offset="100%" style="stop-color:#0077b6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="url(#bg)"/>
+
+  <!-- TV Body -->
+  <rect x="76" y="100" width="360" height="220" rx="12" fill="#2a2a4a" stroke="#3a3a5a" stroke-width="2"/>
+
+  <!-- TV Screen -->
+  <rect x="88" y="112" width="336" height="196" rx="6" fill="url(#screen)"/>
+
+  <!-- Signal waves on screen -->
+  <g opacity="0.3">
+    <path d="M 220 185 Q 256 155, 292 185" fill="none" stroke="#00d2ff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 205 200 Q 256 160, 307 200" fill="none" stroke="#00d2ff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 190 215 Q 256 165, 322 215" fill="none" stroke="#00d2ff" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Signal dot -->
+  <circle cx="256" cy="215" r="6" fill="#00d2ff"/>
+
+  <!-- TV Stand -->
+  <rect x="196" y="320" width="120" height="8" rx="4" fill="#3a3a5a"/>
+  <rect x="216" y="316" width="8" height="8" fill="#3a3a5a"/>
+  <rect x="288" y="316" width="8" height="8" fill="#3a3a5a"/>
+
+  <!-- Text: Bravia -->
+  <text x="256" y="400" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="4">Bravia</text>
+
+  <!-- Text: REST API -->
+  <text x="256" y="450" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="bold" fill="url(#glow)" text-anchor="middle" letter-spacing="6">REST API</text>
+
+  <!-- Subtle accent line -->
+  <rect x="176" y="462" width="160" height="2" rx="1" fill="#00d2ff" opacity="0.5"/>
+</svg>
