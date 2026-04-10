@@ -6,7 +6,7 @@ toda la funcionalidad disponible en la Sony Bravia Pro REST API, muy
 superior a la integración oficial `sony_bravia` que existe actualmente.
 
 ## Contexto técnico
-- Home Assistant corriendo en /config (accesible desde este LXC via NFS en /mnt/ha-config)
+- Home Assistant corriendo en /config (despliegue via HACS desde GitHub)
 - TV Sony Bravia Pro en red local
 - Ya existen scripts .sh manuales que usan esta API — ver /root/bravia-ha/examples/
 
