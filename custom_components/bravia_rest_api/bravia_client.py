@@ -498,6 +498,34 @@ class BraviaClient:
             SERVICE_VIDEO_SCREEN, "setSceneSetting", [{"scene": scene}]
         )
 
+    async def get_scene_setting(self) -> str:
+        """Get current scene/picture mode setting."""
+        result = await self._request(SERVICE_VIDEO_SCREEN, "getSceneSetting")
+        if result and isinstance(result[0], dict):
+            return result[0].get("scene", "")
+        if result and isinstance(result[0], str):
+            return result[0]
+        return ""
+
+    # ------------------------------------------------------------------
+    # Sleep timer (system service)
+    # ------------------------------------------------------------------
+
+    async def get_sleep_timer_settings(self) -> list[dict[str, Any]]:
+        """Get sleep timer settings."""
+        result = await self._request(
+            SERVICE_SYSTEM, "getSleepTimerSettings", [{"target": ""}]
+        )
+        return result[0] if result and isinstance(result[0], list) else result
+
+    async def set_sleep_timer_settings(
+        self, settings: list[dict[str, str]]
+    ) -> None:
+        """Set sleep timer settings."""
+        await self._request(
+            SERVICE_SYSTEM, "setSleepTimerSettings", [{"settings": settings}]
+        )
+
     # ------------------------------------------------------------------
     # IRCC (infrared remote control)
     # ------------------------------------------------------------------

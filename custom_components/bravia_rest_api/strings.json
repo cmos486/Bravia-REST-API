@@ -19,7 +19,8 @@
             "invalid_auth": "Invalid Pre-Shared Key. Check the PSK configured on your TV."
         },
         "abort": {
-            "already_configured": "This TV is already configured."
+            "already_configured": "This TV is already configured.",
+            "cannot_connect": "Cannot connect to the discovered TV."
         }
     },
     "entity": {
@@ -43,6 +44,12 @@
             },
             "screen_rotation": {
                 "name": "Screen Rotation"
+            },
+            "picture_mode": {
+                "name": "Picture Mode"
+            },
+            "sleep_timer": {
+                "name": "Sleep Timer"
             }
         },
         "sensor": {

@@ -76,6 +76,29 @@ SCREEN_ROTATION_OPTIONS: Final = {
     270: "270\u00b0",
 }
 
+# Sleep timer options (value -> display label)
+SLEEP_TIMER_OPTIONS: Final = {
+    "off": "Off",
+    "15": "15 min",
+    "30": "30 min",
+    "45": "45 min",
+    "60": "60 min",
+    "90": "90 min",
+    "120": "120 min",
+}
+
+# Default picture modes (fallback — actual modes discovered at runtime)
+DEFAULT_PICTURE_MODES: Final = [
+    "Standard",
+    "Vivid",
+    "Cinema",
+    "Custom",
+    "Game",
+    "Graphics",
+    "Photo",
+    "Sports",
+]
+
 # WoL
 WOL_PORT: Final = 9
 

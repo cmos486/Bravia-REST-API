@@ -124,16 +124,20 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         # TV is on — fetch detailed state
         try:
             volume_info = await self.client.get_volume_info()
+            # Prefer "speaker" or "" target, fall back to first available
+            chosen = None
             for item in volume_info:
-                if isinstance(item, dict) and item.get("target") in (
-                    "speaker",
-                    "",
-                ):
-                    state.volume = item.get("volume")
-                    state.is_muted = item.get("mute", False)
-                    state.max_volume = item.get("maxVolume", 100)
-                    state.min_volume = item.get("minVolume", 0)
-                    break
+                if isinstance(item, dict):
+                    if item.get("target") in ("speaker", ""):
+                        chosen = item
+                        break
+                    if chosen is None:
+                        chosen = item
+            if chosen:
+                state.volume = chosen.get("volume")
+                state.is_muted = chosen.get("mute", False)
+                state.max_volume = chosen.get("maxVolume", 100)
+                state.min_volume = chosen.get("minVolume", 0)
         except BraviaError as err:
             _LOGGER.debug("Could not fetch volume info: %s", err)
 

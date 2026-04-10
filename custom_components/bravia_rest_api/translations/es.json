@@ -19,7 +19,8 @@
             "invalid_auth": "Clave Pre-Compartida inv\u00e1lida. Verifica el PSK configurado en tu TV."
         },
         "abort": {
-            "already_configured": "Esta TV ya est\u00e1 configurada."
+            "already_configured": "Esta TV ya est\u00e1 configurada.",
+            "cannot_connect": "No se puede conectar a la TV detectada."
         }
     },
     "entity": {
@@ -43,6 +44,12 @@
             },
             "screen_rotation": {
                 "name": "Rotaci\u00f3n de Pantalla"
+            },
+            "picture_mode": {
+                "name": "Modo de Imagen"
+            },
+            "sleep_timer": {
+                "name": "Temporizador de Sue\u00f1o"
             }
         },
         "sensor": {
