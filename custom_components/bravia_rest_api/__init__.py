@@ -1,4 +1,4 @@
-"""Sony Bravia Pro integration for Home Assistant."""
+"""Bravia REST API integration for Home Assistant."""
 
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ def _get_coordinator(hass: HomeAssistant, entity_id: str) -> BraviaCoordinator |
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Sony Bravia Pro from a config entry."""
+    """Set up Bravia REST API from a config entry."""
     host = entry.data[CONF_HOST]
     psk = entry.data[CONF_PSK]
 
@@ -133,7 +133,7 @@ def _register_services(hass: HomeAssistant) -> None:
         """Handle the open_app service."""
         coordinator = _get_coordinator(hass, call.data["entity_id"])
         if coordinator is None:
-            _LOGGER.error("No Sony Bravia Pro device found")
+            _LOGGER.error("No Bravia REST API device found")
             return
 
         app_uri = call.data.get("app_uri")
@@ -171,7 +171,7 @@ def _register_services(hass: HomeAssistant) -> None:
         """Handle the send_ircc service."""
         coordinator = _get_coordinator(hass, call.data["entity_id"])
         if coordinator is None:
-            _LOGGER.error("No Sony Bravia Pro device found")
+            _LOGGER.error("No Bravia REST API device found")
             return
 
         command = call.data["command"]
@@ -200,7 +200,7 @@ def _register_services(hass: HomeAssistant) -> None:
         """Handle the set_audio_output service."""
         coordinator = _get_coordinator(hass, call.data["entity_id"])
         if coordinator is None:
-            _LOGGER.error("No Sony Bravia Pro device found")
+            _LOGGER.error("No Bravia REST API device found")
             return
 
         output = call.data["output"]
@@ -215,7 +215,7 @@ def _register_services(hass: HomeAssistant) -> None:
         """Handle the blank_screen service."""
         coordinator = _get_coordinator(hass, call.data["entity_id"])
         if coordinator is None:
-            _LOGGER.error("No Sony Bravia Pro device found")
+            _LOGGER.error("No Bravia REST API device found")
             return
 
         enable = call.data["enable"]
@@ -229,7 +229,7 @@ def _register_services(hass: HomeAssistant) -> None:
         """Handle the get_installed_apps service."""
         coordinator = _get_coordinator(hass, call.data["entity_id"])
         if coordinator is None:
-            _LOGGER.error("No Sony Bravia Pro device found")
+            _LOGGER.error("No Bravia REST API device found")
             return
 
         await coordinator.refresh_app_list()

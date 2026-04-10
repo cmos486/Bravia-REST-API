@@ -1,7 +1,7 @@
 open_app:
   name: Open Application
   description: >-
-    Open an application on the Sony Bravia Pro TV by name or URI.
+    Open an application on the Bravia REST API TV by name or URI.
     If a name is provided, it is matched against the installed app list.
     If a URI is provided, it is used directly.
   fields:
@@ -12,7 +12,7 @@ open_app:
       example: "media_player.bravia_api"
       selector:
         entity:
-          integration: sony_bravia_pro
+          integration: bravia_rest_api
           domain: media_player
     app_name:
       name: Application Name
@@ -47,7 +47,7 @@ send_ircc:
       example: "remote.bravia_api_remote"
       selector:
         entity:
-          integration: sony_bravia_pro
+          integration: bravia_rest_api
           domain: remote
     command:
       name: Command
@@ -62,7 +62,7 @@ send_ircc:
 set_audio_output:
   name: Set Audio Output
   description: >-
-    Change the audio output of the Sony Bravia Pro TV.
+    Change the audio output of the Bravia REST API TV.
   fields:
     entity_id:
       name: Entity
@@ -71,7 +71,7 @@ set_audio_output:
       example: "media_player.bravia_api"
       selector:
         entity:
-          integration: sony_bravia_pro
+          integration: bravia_rest_api
           domain: media_player
     output:
       name: Output
@@ -100,7 +100,7 @@ blank_screen:
       example: "media_player.bravia_api"
       selector:
         entity:
-          integration: sony_bravia_pro
+          integration: bravia_rest_api
           domain: media_player
     enable:
       name: Enable
@@ -125,5 +125,5 @@ get_installed_apps:
       example: "media_player.bravia_api"
       selector:
         entity:
-          integration: sony_bravia_pro
+          integration: bravia_rest_api
           domain: media_player

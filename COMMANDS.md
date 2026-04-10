@@ -1,6 +1,6 @@
 # IRCC Remote Commands Reference
 
-Complete list of predefined IRCC (Infrared Remote Control Code) commands for Sony Bravia Pro displays.
+Complete list of predefined IRCC (Infrared Remote Control Code) commands for Bravia REST API displays.
 
 > **Note:** The actual available commands depend on your specific TV model. The integration auto-discovers supported commands at setup time. Check the `available_commands` attribute on the `remote` entity for your TV's specific list.
 
@@ -40,7 +40,7 @@ data:
 
 Using the custom service:
 ```yaml
-service: sony_bravia_pro.send_ircc
+service: bravia_rest_api.send_ircc
 target:
   entity_id: remote.bravia_api
 data:
@@ -49,7 +49,7 @@ data:
 
 Raw IRCC code (base64):
 ```yaml
-service: sony_bravia_pro.send_ircc
+service: bravia_rest_api.send_ircc
 target:
   entity_id: remote.bravia_api
 data:

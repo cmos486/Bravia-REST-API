@@ -35,7 +35,7 @@ Autenticación: X-Auth-PSK header con la clave configurada en la TV
 Ver /root/bravia-ha/examples/ — muestran cómo se usan IRCC y appControl
 
 ## Estructura esperada de la integración HA
-custom_components/sony_bravia_pro/
+custom_components/bravia_rest_api/
 ├── __init__.py
 ├── manifest.json
 ├── config_flow.py        ← wizard de configuración (IP, PSK, nombre)

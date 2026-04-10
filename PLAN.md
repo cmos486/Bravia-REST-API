@@ -1,7 +1,7 @@
 # Sony Bravia Pro HA Integration — Architecture Plan
 
 ## Integration Identity
-- **Domain:** `sony_bravia_pro`
+- **Domain:** `bravia_rest_api`
 - **Integration type:** `device` (single TV per config entry)
 - **Min HA version:** 2024.1.0
 
@@ -10,7 +10,7 @@
 ## File Structure
 
 ```
-custom_components/sony_bravia_pro/
+custom_components/bravia_rest_api/
 ├── __init__.py           # Integration setup, forward platforms
 ├── manifest.json         # Integration metadata
 ├── const.py              # Constants, domain, default values
@@ -61,7 +61,7 @@ custom_components/sony_bravia_pro/
 ### 1. `const.py` — Constants
 
 ```python
-DOMAIN = "sony_bravia_pro"
+DOMAIN = "bravia_rest_api"
 DEFAULT_PORT = 80
 CONF_PSK = "psk"
 SCAN_INTERVAL = 15  # seconds

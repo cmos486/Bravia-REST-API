@@ -1,8 +1,8 @@
-"""Constants for the Sony Bravia Pro integration."""
+"""Constants for the Bravia REST API integration."""
 
 from typing import Final
 
-DOMAIN: Final = "sony_bravia_pro"
+DOMAIN: Final = "bravia_rest_api"
 
 CONF_PSK: Final = "psk"
 CONF_MAC: Final = "mac"

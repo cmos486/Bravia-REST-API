@@ -2,14 +2,14 @@
     "config": {
         "step": {
             "user": {
-                "title": "Sony Bravia Pro",
-                "description": "Configure your Sony Bravia Pro display.",
+                "title": "Bravia REST API",
+                "description": "Configure your Bravia REST API display.",
                 "data": {
                     "host": "IP Address",
                     "psk": "Pre-Shared Key (PSK)"
                 },
                 "data_description": {
-                    "host": "IP address of your Sony Bravia Pro display",
+                    "host": "IP address of your Bravia REST API display",
                     "psk": "Pre-Shared Key configured in TV Settings > Network & Internet > IP Control"
                 }
             }

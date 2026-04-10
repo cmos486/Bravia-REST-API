@@ -1,4 +1,4 @@
-"""Sensor entities for Sony Bravia Pro."""
+"""Sensor entities for Bravia REST API."""
 
 from __future__ import annotations
 
@@ -64,7 +64,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Sony Bravia Pro sensors."""
+    """Set up Bravia REST API sensors."""
     coordinator: BraviaCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         BraviaSensor(coordinator, entry, desc) for desc in SENSOR_DESCRIPTIONS
@@ -72,7 +72,7 @@ async def async_setup_entry(
 
 
 class BraviaSensor(BraviaEntity, SensorEntity):
-    """A Sony Bravia Pro diagnostic sensor."""
+    """A Bravia REST API diagnostic sensor."""
 
     entity_description: BraviaSensorDescription
 

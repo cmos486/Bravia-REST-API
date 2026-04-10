@@ -1,4 +1,4 @@
-"""Config flow for Sony Bravia Pro integration."""
+"""Config flow for Bravia REST API integration."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 
 class SonyBraviaProConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Sony Bravia Pro."""
+    """Handle a config flow for Bravia REST API."""
 
     VERSION = 1
 

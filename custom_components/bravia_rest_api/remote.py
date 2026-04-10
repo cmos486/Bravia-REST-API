@@ -1,4 +1,4 @@
-"""Remote entity for Sony Bravia Pro (IRCC commands)."""
+"""Remote entity for Bravia REST API (IRCC commands)."""
 
 from __future__ import annotations
 
@@ -25,13 +25,13 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Sony Bravia Pro remote."""
+    """Set up the Bravia REST API remote."""
     coordinator: BraviaCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([BraviaRemote(coordinator, entry)])
 
 
 class BraviaRemote(BraviaEntity, RemoteEntity):
-    """Sony Bravia Pro remote control entity.
+    """Bravia REST API remote control entity.
 
     This entity is always on — it represents the command sender,
     not the TV power state. Power control is handled by the media_player.

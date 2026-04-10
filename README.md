@@ -1,10 +1,10 @@
-# Sony Bravia Api
+# Bravia REST API
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue.svg)](https://www.home-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A full-featured Home Assistant custom integration for **Sony Bravia Pro** professional displays, built on top of the [Sony Bravia Pro REST API](https://pro-bravia.sony.net/remote-display-control/rest-api/reference/).
+A full-featured Home Assistant custom integration for **Sony Bravia** professional displays, built on top of the [Sony Bravia Pro REST API](https://pro-bravia.sony.net/remote-display-control/rest-api/reference/).
 
 This integration is significantly more capable than the built-in `braviatv` integration, exposing all available API functionality as native Home Assistant entities.
 
@@ -14,11 +14,11 @@ This integration is significantly more capable than the built-in `braviatv` inte
 
 - **Media Player** — Power on/off, volume control (set, step, mute), input source selection, app launching, and media browser for apps and inputs
 - **Remote Control** — Send any IRCC remote command by name or raw code (volume, navigation, playback, numbers, etc.)
-- **Buttons** — Reboot, terminate apps, picture off (blank screen), picture on
+- **Buttons** — Reboot, terminate apps, picture off (blank screen), picture on, plus 15 IRCC remote buttons (Home, Back, D-pad, OK, Volume, Channels, Netflix, etc.)
 - **Select Entities** — Sound output mode (speaker, HDMI, audio system), screen rotation (0°, 90°, 180°, 270°)
 - **Sensors** — Model name, firmware version, serial number, MAC address (diagnostic)
 - **Switches** — LED indicator on/off, Wake-on-LAN enable/disable
-- **Custom Services** — Send IRCC codes, send text to on-screen keyboard, set picture quality, set scene mode, launch apps
+- **Custom Services** — Open app by name, send IRCC codes, set audio output, blank screen, refresh app list
 - **Wake-on-LAN** — Automatically sends WoL magic packets to power on the TV from standby
 - **Runtime Discovery** — Detects available features and IRCC codes per TV model at setup time
 - **Media Browser** — Browse and launch installed Android apps and switch between inputs visually
@@ -27,7 +27,7 @@ This integration is significantly more capable than the built-in `braviatv` inte
 
 ## Prerequisites
 
-1. A **Sony Bravia Pro** display on the same local network as your Home Assistant instance
+1. A **Sony Bravia** display on the same local network as your Home Assistant instance
 2. **Pre-Shared Key (PSK)** authentication enabled on the TV:
    - Go to **Settings > Network & Internet > Local network setup > IP control > Authentication**
    - Set a PSK (any string, e.g., `1234`)
@@ -43,16 +43,16 @@ This integration is significantly more capable than the built-in `braviatv` inte
 
 1. Open HACS in your Home Assistant instance
 2. Click the three dots menu (top right) → **Custom repositories**
-3. Add the repository URL: `https://github.com/cmos486/sony-bravia-api`
+3. Add the repository URL: `https://github.com/cmos486/Bravia-REST-API`
 4. Select category: **Integration**
 5. Click **Add**
-6. Search for **Sony Bravia Api** in HACS and click **Install**
+6. Search for **Bravia REST API** in HACS and click **Install**
 7. Restart Home Assistant
 
 ### Manual Installation
 
-1. Download the latest release from the [Releases](https://github.com/cmos486/sony-bravia-api/releases) page
-2. Copy the `custom_components/sony_bravia_pro/` folder to your Home Assistant `config/custom_components/` directory
+1. Download the latest release from the [Releases](https://github.com/cmos486/Bravia-REST-API/releases) page
+2. Copy the `custom_components/bravia_rest_api/` folder to your Home Assistant `config/custom_components/` directory
 3. Restart Home Assistant
 
 ---
@@ -60,7 +60,7 @@ This integration is significantly more capable than the built-in `braviatv` inte
 ## Configuration
 
 1. Go to **Settings > Devices & Services > Add Integration**
-2. Search for **Sony Bravia Pro**
+2. Search for **Bravia REST API**
 3. Enter the TV's **IP address** and the **Pre-Shared Key** you configured
 4. The integration will validate the connection and auto-discover the TV model
 5. Click **Submit**
@@ -76,22 +76,37 @@ After setup, the integration creates the following entities for your TV:
 ### Media Player
 | Entity | Description |
 |--------|-------------|
-| `media_player.<tv_name>` | Main TV entity — power, volume, source selection, app launching |
+| `media_player.<tv_model>` | Main TV entity — power, volume, source selection, app launching |
 
 **Source list** combines HDMI inputs and installed Android apps into one unified list.
 
 ### Remote
 | Entity | Description |
 |--------|-------------|
-| `remote.<tv_name>_remote` | Send IRCC remote commands to the TV |
+| `remote.<tv_name>_remote` | Send IRCC remote commands to the TV (always-on) |
 
-### Buttons
+### Buttons — System
 | Entity | Description |
 |--------|-------------|
 | `button.<tv_name>_reboot` | Reboot the TV |
 | `button.<tv_name>_terminate_apps` | Close all foreground apps |
 | `button.<tv_name>_picture_off` | Turn off the screen (blank) |
 | `button.<tv_name>_picture_on` | Turn the screen back on |
+
+### Buttons — Remote IRCC
+| Entity | Description |
+|--------|-------------|
+| `button.<tv_name>_ircc_home` | Remote: Home |
+| `button.<tv_name>_ircc_back` | Remote: Back |
+| `button.<tv_name>_ircc_up/down/left/right` | Remote: D-pad navigation |
+| `button.<tv_name>_ircc_confirm` | Remote: OK |
+| `button.<tv_name>_ircc_options` | Remote: Options |
+| `button.<tv_name>_ircc_volume_up/down` | Remote: Volume Up/Down |
+| `button.<tv_name>_ircc_mute` | Remote: Mute |
+| `button.<tv_name>_ircc_channel_up/down` | Remote: Channel Up/Down |
+| `button.<tv_name>_ircc_netflix` | Remote: Netflix |
+| `button.<tv_name>_ircc_play/pause/stop` | Remote: Playback controls |
+| `button.<tv_name>_ircc_input` | Remote: Input selector |
 
 ### Selects
 | Entity | Description |
@@ -117,23 +132,65 @@ After setup, the integration creates the following entities for your TV:
 
 ## Services
 
-### `sony_bravia_pro.send_ircc`
+### `bravia_rest_api.send_ircc`
 Send an IRCC remote control command.
 
 ```yaml
-service: remote.send_command
+service: bravia_rest_api.send_ircc
 target:
-  entity_id: remote.bravia_tv_remote
+  entity_id: remote.kd_65xh9096_remote
 data:
   command: VolumeUp
 ```
 
-You can also send multiple commands:
+### `bravia_rest_api.open_app`
+Open an app by name (case-insensitive) or URI.
+
+```yaml
+service: bravia_rest_api.open_app
+target:
+  entity_id: media_player.kd_65xh9096
+data:
+  app_name: Netflix
+```
+
+### `bravia_rest_api.set_audio_output`
+Change audio output.
+
+```yaml
+service: bravia_rest_api.set_audio_output
+target:
+  entity_id: media_player.kd_65xh9096
+data:
+  output: speaker
+```
+
+### `bravia_rest_api.blank_screen`
+Turn the screen off/on.
+
+```yaml
+service: bravia_rest_api.blank_screen
+target:
+  entity_id: media_player.kd_65xh9096
+data:
+  enable: true
+```
+
+### `bravia_rest_api.get_installed_apps`
+Force refresh the installed apps list.
+
+```yaml
+service: bravia_rest_api.get_installed_apps
+target:
+  entity_id: media_player.kd_65xh9096
+```
+
+You can also use the standard `remote.send_command` service:
 
 ```yaml
 service: remote.send_command
 target:
-  entity_id: remote.bravia_tv_remote
+  entity_id: remote.kd_65xh9096_remote
 data:
   command:
     - Home
@@ -143,57 +200,11 @@ data:
   num_repeats: 1
 ```
 
-### `sony_bravia_pro.launch_app`
-Launch an Android app by URI.
-
-```yaml
-service: media_player.play_media
-target:
-  entity_id: media_player.bravia_tv
-data:
-  media_content_type: app
-  media_content_id: "com.sony.dtv.com.netflix.ninja.com.netflix.ninja.MainActivity"
-```
-
-### `sony_bravia_pro.set_picture_quality`
-Adjust picture settings.
-
-```yaml
-service: sony_bravia_pro.set_picture_quality
-target:
-  entity_id: media_player.bravia_tv
-data:
-  target: brightness
-  value: "50"
-```
-
-### `sony_bravia_pro.set_scene`
-Set the scene/picture mode.
-
-```yaml
-service: sony_bravia_pro.set_scene
-target:
-  entity_id: media_player.bravia_tv
-data:
-  scene: auto
-```
-
-### `sony_bravia_pro.send_text`
-Send text to the on-screen keyboard.
-
-```yaml
-service: sony_bravia_pro.send_text
-target:
-  entity_id: remote.bravia_tv_remote
-data:
-  text: "Hello World"
-```
-
 ---
 
 ## Known IRCC Codes
 
-These are common IRCC command names. The actual available commands depend on your TV model and are auto-discovered at setup time. Check the `available_commands` attribute on the remote entity for the full list.
+These are common IRCC command names. The actual available commands depend on your TV model and are auto-discovered at setup time. Check the `available_commands` attribute on the remote entity for the full list. See [COMMANDS.md](COMMANDS.md) for the complete reference.
 
 | Command | Description |
 |---------|-------------|
@@ -210,7 +221,7 @@ These are common IRCC command names. The actual available commands depend on you
 | `Options` | Options menu |
 | `Play` / `Pause` / `Stop` | Playback controls |
 | `Next` / `Prev` | Track skip |
-| `Display` | Show/hide OSD info |
+| `Netflix` | Launch Netflix |
 
 ---
 

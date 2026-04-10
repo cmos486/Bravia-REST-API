@@ -1,6 +1,6 @@
 {
-    "domain": "sony_bravia_pro",
-    "name": "Sony Bravia Pro",
+    "domain": "bravia_rest_api",
+    "name": "Bravia REST API",
     "codeowners": ["@cmos486"],
     "config_flow": true,
     "documentation": "https://pro-bravia.sony.net/remote-display-control/rest-api/reference/",

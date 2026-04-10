@@ -1,4 +1,4 @@
-"""Media player entity for Sony Bravia Pro."""
+"""Media player entity for Bravia REST API."""
 
 from __future__ import annotations
 
@@ -51,13 +51,13 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Sony Bravia Pro media player."""
+    """Set up the Bravia REST API media player."""
     coordinator: BraviaCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([BraviaMediaPlayer(coordinator, entry)])
 
 
 class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
-    """Representation of a Sony Bravia Pro TV as a media player."""
+    """Representation of a Bravia REST API TV as a media player."""
 
     _attr_device_class = MediaPlayerDeviceClass.TV
     _attr_has_entity_name = False
@@ -267,7 +267,7 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
                 media_class="directory",
                 media_content_id="root",
                 media_content_type="directory",
-                title="Sony Bravia Pro",
+                title="Bravia REST API",
                 can_play=False,
                 can_expand=True,
                 children=[

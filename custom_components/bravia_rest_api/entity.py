@@ -1,4 +1,4 @@
-"""Base entity for Sony Bravia Pro integration."""
+"""Base entity for Bravia REST API integration."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from .coordinator import BraviaCoordinator, BraviaState
 
 
 class BraviaEntity(CoordinatorEntity[BraviaCoordinator]):
-    """Base class for Sony Bravia Pro entities."""
+    """Base class for Bravia REST API entities."""
 
     _attr_has_entity_name = True
 
@@ -25,7 +25,7 @@ class BraviaEntity(CoordinatorEntity[BraviaCoordinator]):
         info = coordinator.system_info
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.unique_id or entry.entry_id)},
-            name=info.get("model") or info.get("name") or "Sony Bravia Pro",
+            name=info.get("model") or info.get("name") or "Bravia REST API",
             manufacturer="Sony",
             model=info.get("model"),
             sw_version=info.get("generation") or info.get("firmware"),

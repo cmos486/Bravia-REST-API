@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for Sony Bravia Pro."""
+"""DataUpdateCoordinator for Bravia REST API."""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ class BraviaState:
 
 
 class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
-    """Coordinator to poll Sony Bravia Pro TV state."""
+    """Coordinator to poll Bravia REST API TV state."""
 
     config_entry: ConfigEntry
     client: BraviaClient

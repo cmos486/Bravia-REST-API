@@ -2,14 +2,14 @@
     "config": {
         "step": {
             "user": {
-                "title": "Sony Bravia Pro",
-                "description": "Configura tu pantalla Sony Bravia Pro.",
+                "title": "Bravia REST API",
+                "description": "Configura tu pantalla Bravia REST API.",
                 "data": {
                     "host": "Direcci\u00f3n IP",
                     "psk": "Clave Pre-Compartida (PSK)"
                 },
                 "data_description": {
-                    "host": "Direcci\u00f3n IP de tu pantalla Sony Bravia Pro",
+                    "host": "Direcci\u00f3n IP de tu pantalla Bravia REST API",
                     "psk": "Clave Pre-Compartida configurada en Ajustes > Red e Internet > Control IP de la TV"
                 }
             }

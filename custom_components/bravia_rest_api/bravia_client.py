@@ -1,4 +1,4 @@
-"""Sony Bravia Pro REST API client."""
+"""Bravia REST API REST API client."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ class BraviaApiError(BraviaError):
 
 
 class BraviaClient:
-    """Async client for Sony Bravia Pro REST API."""
+    """Async client for Bravia REST API REST API."""
 
     def __init__(
         self,

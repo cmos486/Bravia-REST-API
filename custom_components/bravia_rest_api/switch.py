@@ -1,4 +1,4 @@
-"""Switch entities for Sony Bravia Pro."""
+"""Switch entities for Bravia REST API."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Sony Bravia Pro switches."""
+    """Set up Bravia REST API switches."""
     coordinator: BraviaCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         [
