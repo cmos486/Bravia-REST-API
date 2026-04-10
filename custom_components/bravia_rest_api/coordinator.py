@@ -60,6 +60,7 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
     ircc_codes: dict[str, str]
     system_info: dict[str, Any]
     _app_list_fetched: bool
+    _cached_app_list: list[dict[str, Any]]
 
     def __init__(
         self,
@@ -78,6 +79,7 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         self.ircc_codes = {}
         self.system_info = {}
         self._app_list_fetched = False
+        self._cached_app_list = []
 
     async def async_setup(self) -> None:
         """Perform one-time setup: fetch system info and IRCC codes."""
@@ -151,17 +153,14 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         except BraviaError as err:
             _LOGGER.debug("Could not fetch external inputs: %s", err)
 
-        # Fetch app list once (it rarely changes)
+        # Fetch app list once (it rarely changes), cache in coordinator
         if not self._app_list_fetched:
             try:
-                state.app_list = await self.client.get_app_list()
+                self._cached_app_list = await self.client.get_app_list()
                 self._app_list_fetched = True
             except BraviaError as err:
                 _LOGGER.debug("Could not fetch app list: %s", err)
-        else:
-            # Reuse previous app list
-            if self.data and self.data.app_list:
-                state.app_list = self.data.app_list
+        state.app_list = self._cached_app_list
 
         try:
             state.app_status = await self.client.get_app_status_list()
@@ -189,4 +188,5 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
     async def refresh_app_list(self) -> None:
         """Force a refresh of the application list."""
         self._app_list_fetched = False
+        self._cached_app_list = []
         await self.async_request_refresh()
