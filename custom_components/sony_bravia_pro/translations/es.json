@@ -3,7 +3,7 @@
         "step": {
             "user": {
                 "title": "Sony Bravia Pro",
-                "description": "Configura tu pantalla Sony Bravia Pro. La TV debe estar encendida durante la configuraci\u00f3n.",
+                "description": "Configura tu pantalla Sony Bravia Pro.",
                 "data": {
                     "host": "Direcci\u00f3n IP",
                     "psk": "Clave Pre-Compartida (PSK)"
@@ -15,9 +15,8 @@
             }
         },
         "error": {
-            "cannot_connect": "No se puede conectar a la TV. Verifica la direcci\u00f3n IP y aseg\u00farate de que la TV est\u00e9 encendida.",
-            "invalid_auth": "Clave Pre-Compartida inv\u00e1lida. Verifica el PSK configurado en tu TV.",
-            "tv_off": "La TV parece estar en espera. Por favor, enci\u00e9ndela antes de configurar."
+            "cannot_connect": "No se puede conectar a la TV. Verifica la direcci\u00f3n IP y que la TV sea accesible en la red.",
+            "invalid_auth": "Clave Pre-Compartida inv\u00e1lida. Verifica el PSK configurado en tu TV."
         },
         "abort": {
             "already_configured": "Esta TV ya est\u00e1 configurada."

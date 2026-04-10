@@ -3,7 +3,7 @@
         "step": {
             "user": {
                 "title": "Sony Bravia Pro",
-                "description": "Configure your Sony Bravia Pro display. The TV must be turned on during setup.",
+                "description": "Configure your Sony Bravia Pro display.",
                 "data": {
                     "host": "IP Address",
                     "psk": "Pre-Shared Key (PSK)"
@@ -15,9 +15,8 @@
             }
         },
         "error": {
-            "cannot_connect": "Cannot connect to the TV. Verify the IP address and ensure the TV is turned on.",
-            "invalid_auth": "Invalid Pre-Shared Key. Check the PSK configured on your TV.",
-            "tv_off": "The TV appears to be in standby. Please turn it on before configuring."
+            "cannot_connect": "Cannot connect to the TV. Verify the IP address and that the TV is reachable on the network.",
+            "invalid_auth": "Invalid Pre-Shared Key. Check the PSK configured on your TV."
         },
         "abort": {
             "already_configured": "This TV is already configured."

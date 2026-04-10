@@ -50,7 +50,6 @@ class SonyBraviaProConfigFlow(ConfigFlow, domain=DOMAIN):
 
             try:
                 system_info = await client.get_system_info()
-                power_status = await client.get_power_status()
             except BraviaAuthError:
                 errors["base"] = "invalid_auth"
             except BraviaConnectionError:
@@ -58,11 +57,11 @@ class SonyBraviaProConfigFlow(ConfigFlow, domain=DOMAIN):
             except BraviaError:
                 errors["base"] = "cannot_connect"
             else:
-                if power_status != "active":
-                    errors["base"] = "tv_off"
+                model = system_info.get("model")
+                if not model:
+                    errors["base"] = "cannot_connect"
                 else:
                     serial = system_info.get("serial", "")
-                    model = system_info.get("model", "Sony Bravia Pro")
                     mac = system_info.get("macAddr", "")
                     name = system_info.get("name", model)
                     firmware = system_info.get("generation", "")
