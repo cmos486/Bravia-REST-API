@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import logging
 from typing import Any
 from urllib.parse import urlparse
@@ -10,9 +11,17 @@ import aiohttp
 import voluptuous as vol
 
 from homeassistant.components import ssdp
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_HOST
+from homeassistant.core import callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import TextSelector, TextSelectorConfig
 
 from .bravia_client import (
     BraviaAuthError,
@@ -20,7 +29,7 @@ from .bravia_client import (
     BraviaConnectionError,
     BraviaError,
 )
-from .const import CONF_MAC, CONF_PSK, DOMAIN
+from .const import CONF_EXCLUDED_SOURCES, CONF_MAC, CONF_PSK, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +45,12 @@ class BraviaRestApiConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Bravia REST API."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Create the options flow."""
+        return BraviaRestApiOptionsFlow(config_entry)
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -151,3 +166,74 @@ class BraviaRestApiConfigFlow(ConfigFlow, domain=DOMAIN):
         self.context["title_placeholders"] = {"name": model or host}
 
         return await self.async_step_user()
+
+
+class BraviaRestApiOptionsFlow(OptionsFlow):
+    """Handle options for Bravia REST API."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            excluded = user_input.get(CONF_EXCLUDED_SOURCES, [])
+            if isinstance(excluded, str):
+                # Text area fallback: split by newlines
+                excluded = [s.strip() for s in excluded.splitlines() if s.strip()]
+            return self.async_create_entry(
+                title="", data={CONF_EXCLUDED_SOURCES: excluded}
+            )
+
+        # Build available sources from coordinator
+        coordinator = self.hass.data.get(DOMAIN, {}).get(
+            self.config_entry.entry_id
+        )
+        sources: list[str] = []
+        if coordinator and coordinator.data:
+            data = coordinator.data
+            for inp in data.external_inputs:
+                custom_label = inp.get("label", "")
+                label = inp.get("title", "")
+                name = custom_label if custom_label else label
+                if name:
+                    sources.append(name)
+            for app in data.app_list:
+                title = html.unescape(app.get("title", ""))
+                if title:
+                    sources.append(title)
+
+        current_excluded = self.config_entry.options.get(
+            CONF_EXCLUDED_SOURCES, []
+        )
+
+        if sources:
+            # Multi-select with current sources
+            source_lower_map = {s.lower(): s for s in sources}
+            valid_default = [
+                source_lower_map[e.lower()]
+                for e in current_excluded
+                if e.lower() in source_lower_map
+            ]
+            schema = vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_EXCLUDED_SOURCES, default=valid_default
+                    ): cv.multi_select({s: s for s in sorted(sources)}),
+                }
+            )
+        else:
+            # TV off fallback: multiline text input
+            schema = vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_EXCLUDED_SOURCES,
+                        default="\n".join(current_excluded),
+                    ): TextSelector(TextSelectorConfig(multiline=True)),
+                }
+            )
+
+        return self.async_show_form(step_id="init", data_schema=schema)

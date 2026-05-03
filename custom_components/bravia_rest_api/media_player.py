@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import html
 import logging
 import socket
 from typing import Any
@@ -18,7 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .bravia_client import BraviaError
-from .const import CONF_MAC, DOMAIN, WOL_PORT
+from .const import CONF_EXCLUDED_SOURCES, CONF_MAC, DOMAIN, WOL_PORT, YAML_CONFIG_KEY
 from .coordinator import BraviaCoordinator
 from .entity import BraviaEntity
 
@@ -96,7 +97,7 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
                 self._sources[name] = {"uri": uri, "type": SOURCE_TYPE_INPUT}
 
         for app in data.app_list:
-            title = app.get("title", "")
+            title = html.unescape(app.get("title", ""))
             uri = app.get("uri", "")
             if title and uri:
                 self._sources[title] = {"uri": uri, "type": SOURCE_TYPE_APP}
@@ -141,13 +142,24 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
             if src["uri"] == uri:
                 return name
 
-        return title or uri or None
+        return html.unescape(title) if title else uri or None
+
+    def _get_excluded_sources(self) -> set[str]:
+        """Get excluded sources (case-insensitive). Options flow wins over YAML."""
+        excluded = self._entry.options.get(CONF_EXCLUDED_SOURCES)
+        if excluded is None:
+            yaml_cfg = self.hass.data.get(YAML_CONFIG_KEY, {})
+            excluded = yaml_cfg.get(CONF_EXCLUDED_SOURCES, [])
+        return {s.lower() for s in excluded}
 
     @property
     def source_list(self) -> list[str]:
         """Return the list of available sources."""
         self._build_source_map()
-        return list(self._sources.keys())
+        excluded = self._get_excluded_sources()
+        if not excluded:
+            return list(self._sources.keys())
+        return [name for name in self._sources if name.lower() not in excluded]
 
     @property
     def media_title(self) -> str | None:
@@ -164,7 +176,7 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         data = self.coordinator.data
         if data and data.app_list:
             attrs["installed_apps"] = {
-                app.get("title", "Unknown"): app.get("uri", "")
+                html.unescape(app.get("title", "Unknown")): app.get("uri", "")
                 for app in data.app_list
                 if app.get("title") and app.get("uri")
             }

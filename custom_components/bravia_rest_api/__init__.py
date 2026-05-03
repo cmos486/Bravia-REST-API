@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import logging
 from typing import Any
 
@@ -14,7 +15,15 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .bravia_client import BraviaClient, BraviaError
-from .const import CONF_PSK, DOMAIN, IRCC_CODES, POWER_SAVING_OFF, POWER_SAVING_PICTURE_OFF
+from .const import (
+    CONF_EXCLUDED_SOURCES,
+    CONF_PSK,
+    DOMAIN,
+    IRCC_CODES,
+    POWER_SAVING_OFF,
+    POWER_SAVING_PICTURE_OFF,
+    YAML_CONFIG_KEY,
+)
 from .coordinator import BraviaCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,6 +82,26 @@ SERVICE_GET_INSTALLED_APPS_SCHEMA = vol.Schema(
     }
 )
 
+CONFIG_SCHEMA = vol.Schema(
+    {
+        DOMAIN: vol.Schema(
+            {
+                vol.Optional(CONF_EXCLUDED_SOURCES, default=[]): vol.All(
+                    cv.ensure_list, [cv.string]
+                ),
+            }
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
+
+
+async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
+    """Store YAML configuration if present."""
+    if DOMAIN in config:
+        hass.data[YAML_CONFIG_KEY] = config[DOMAIN]
+    return True
+
 
 def _get_coordinator(hass: HomeAssistant, entity_id: str) -> BraviaCoordinator | None:
     """Find the coordinator for a given entity_id."""
@@ -98,11 +127,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORM_LIST)
 
+    # Refresh entities when options change (e.g. excluded_sources)
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+
     # Register services (only once, on first entry)
     if not hass.services.has_service(DOMAIN, SERVICE_OPEN_APP):
         _register_services(hass)
 
     return True
+
+
+async def _async_update_listener(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> None:
+    """Handle options update without restarting the coordinator."""
+    coordinator = hass.data[DOMAIN].get(entry.entry_id)
+    if coordinator:
+        coordinator.async_set_updated_data(coordinator.data)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -144,11 +185,11 @@ def _register_services(hass: HomeAssistant) -> None:
             return
 
         if not app_uri and app_name:
-            # Look up by name (case-insensitive)
+            # Look up by name (case-insensitive, HTML-decoded)
             name_lower = app_name.lower()
             if coordinator.data and coordinator.data.app_list:
                 for app in coordinator.data.app_list:
-                    if app.get("title", "").lower() == name_lower:
+                    if html.unescape(app.get("title", "")).lower() == name_lower:
                         app_uri = app.get("uri")
                         break
             if not app_uri:
@@ -156,7 +197,7 @@ def _register_services(hass: HomeAssistant) -> None:
                     "App '%s' not found. Available: %s",
                     app_name,
                     ", ".join(
-                        a.get("title", "?")
+                        html.unescape(a.get("title", "?"))
                         for a in (coordinator.data.app_list if coordinator.data else [])
                     ),
                 )

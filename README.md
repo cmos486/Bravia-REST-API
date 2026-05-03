@@ -72,6 +72,32 @@ Before installing, make sure your TV is configured:
   <img src="https://raw.githubusercontent.com/cmos486/Bravia-REST-API/main/images/integration_installed.jpg" alt="Integration installed in Home Assistant" width="600"/>
 </p>
 
+### Excluded Sources
+
+Optionally hide specific apps or inputs from the source list dropdown. Excluded sources
+are still launchable via the `bravia_rest_api.open_app` service and remain visible in the
+`installed_apps` attribute.
+
+**Option A: UI (Options Flow)**
+
+1. Go to **Settings > Devices & Services > Bravia REST API**
+2. Click **Configure**
+3. Select the sources you want to exclude from the dropdown
+4. Click **Submit**
+
+> If the TV is off when you open the options, a text field is shown instead — enter one source name per line.
+
+**Option B: YAML**
+
+```yaml
+bravia_rest_api:
+  excluded_sources:
+    - "Timers & Clock"
+    - "Eco Dashboard"
+```
+
+> If both UI and YAML are configured, the UI selection takes priority.
+
 ---
 
 ## 🎮 Entities Created

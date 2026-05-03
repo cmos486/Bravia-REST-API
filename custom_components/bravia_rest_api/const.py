@@ -6,6 +6,9 @@ DOMAIN: Final = "bravia_rest_api"
 
 CONF_PSK: Final = "psk"
 CONF_MAC: Final = "mac"
+CONF_EXCLUDED_SOURCES: Final = "excluded_sources"
+
+YAML_CONFIG_KEY: Final = f"{DOMAIN}_yaml"
 
 DEFAULT_PORT: Final = 80
 DEFAULT_SCAN_INTERVAL: Final = 15  # seconds

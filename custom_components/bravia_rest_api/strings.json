@@ -23,6 +23,20 @@
             "cannot_connect": "Cannot connect to the discovered TV."
         }
     },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Bravia REST API Options",
+                "description": "Configure source list filtering.",
+                "data": {
+                    "excluded_sources": "Excluded Sources"
+                },
+                "data_description": {
+                    "excluded_sources": "Sources to hide from the source list dropdown. If the TV is off, enter one source name per line."
+                }
+            }
+        }
+    },
     "entity": {
         "button": {
             "reboot": {

@@ -23,6 +23,20 @@
             "cannot_connect": "No se puede conectar a la TV detectada."
         }
     },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opciones Bravia REST API",
+                "description": "Configura el filtrado de la lista de fuentes.",
+                "data": {
+                    "excluded_sources": "Fuentes Excluidas"
+                },
+                "data_description": {
+                    "excluded_sources": "Fuentes a ocultar del desplegable de fuentes. Si la TV esta apagada, introduce un nombre de fuente por linea."
+                }
+            }
+        }
+    },
     "entity": {
         "button": {
             "reboot": {
