@@ -11,6 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .bravia_client import BraviaError
 from .const import (
+    BRIGHTNESS_PRESETS,
     DEFAULT_PICTURE_MODES,
     DOMAIN,
     SCREEN_ROTATION_OPTIONS,
@@ -30,14 +31,15 @@ async def async_setup_entry(
 ) -> None:
     """Set up Bravia REST API select entities."""
     coordinator: BraviaCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        [
-            BraviaSoundOutputSelect(coordinator, entry),
-            BraviaScreenRotationSelect(coordinator, entry),
-            BraviaPictureModeSelect(coordinator, entry),
-            BraviaSleepTimerSelect(coordinator, entry),
-        ]
-    )
+    entities: list[SelectEntity] = [
+        BraviaSoundOutputSelect(coordinator, entry),
+        BraviaScreenRotationSelect(coordinator, entry),
+        BraviaPictureModeSelect(coordinator, entry),
+        BraviaSleepTimerSelect(coordinator, entry),
+    ]
+    if coordinator.brightness_supported:
+        entities.append(BraviaBrightnessSelect(coordinator, entry))
+    async_add_entities(entities)
 
 
 class BraviaSoundOutputSelect(BraviaEntity, SelectEntity):
@@ -247,3 +249,58 @@ class BraviaSleepTimerSelect(BraviaEntity, SelectEntity):
                         break
         except BraviaError:
             pass
+
+
+class BraviaBrightnessSelect(BraviaEntity, SelectEntity):
+    """Select entity for brightness presets."""
+
+    _attr_translation_key = "brightness_preset"
+    _attr_icon = "mdi:brightness-6"
+
+    def __init__(
+        self,
+        coordinator: BraviaCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.unique_id}_brightness_preset"
+        self._attr_options = list(BRIGHTNESS_PRESETS.keys())
+        self._bri_min = coordinator.brightness_min
+        self._bri_max = coordinator.brightness_max
+
+    def _value_for_preset(self, preset: str) -> int:
+        """Calculate brightness value for a preset name."""
+        fraction = BRIGHTNESS_PRESETS[preset]
+        return round(self._bri_min + fraction * (self._bri_max - self._bri_min))
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the closest brightness preset to the current value."""
+        data = self.coordinator.data
+        if not data or data.brightness is None:
+            return None
+        current = data.brightness
+        bri_range = self._bri_max - self._bri_min
+        if bri_range == 0:
+            return "Min"
+        fraction = (current - self._bri_min) / bri_range
+        closest = "Medium"
+        closest_dist = float("inf")
+        for name, pct in BRIGHTNESS_PRESETS.items():
+            dist = abs(fraction - pct)
+            if dist < closest_dist:
+                closest_dist = dist
+                closest = name
+        return closest
+
+    async def async_select_option(self, option: str) -> None:
+        """Set brightness to a preset value."""
+        if option not in BRIGHTNESS_PRESETS:
+            _LOGGER.error("Unknown brightness preset: %s", option)
+            return
+        value = self._value_for_preset(option)
+        try:
+            await self.coordinator.client.set_brightness(value)
+        except BraviaError as err:
+            _LOGGER.error("Failed to set brightness preset: %s", err)
+        await self.coordinator.async_request_refresh()

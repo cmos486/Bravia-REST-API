@@ -475,6 +475,27 @@ class BraviaClient:
             [{"settings": settings}],
         )
 
+    async def get_brightness(self) -> dict[str, Any] | None:
+        """Get current brightness info.
+
+        Returns the brightness setting dict (with currentValue, min, max, etc.)
+        or None if brightness is not supported by this TV.
+        """
+        try:
+            settings = await self.get_picture_quality_settings("brightness")
+        except BraviaApiError:
+            return None
+        for item in settings:
+            if isinstance(item, dict) and item.get("target") == "brightness":
+                return item
+        return None
+
+    async def set_brightness(self, value: int) -> None:
+        """Set brightness value (as integer within TV-reported range)."""
+        await self.set_picture_quality_settings(
+            [{"target": "brightness", "value": str(value)}]
+        )
+
     async def get_screen_rotation(self) -> int:
         """Get screen rotation angle."""
         result = await self._request(SERVICE_VIDEO, "getScreenRotation")

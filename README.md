@@ -150,6 +150,14 @@ The integration creates **30+ entities** for full TV control:
 | `button._ircc_stop` | Stop | ⏹️ |
 | `button._ircc_input` | Input selector | 🔌 |
 
+### 🔢 Numbers
+
+| Entity | Description |
+|--------|-------------|
+| `number._brightness` | Picture brightness slider (range discovered per TV model) |
+
+> Only created if the TV supports `getPictureQualitySettings` for the `brightness` target.
+
 ### 🎚️ Selects
 
 | Entity | Options |
@@ -158,6 +166,7 @@ The integration creates **30+ entities** for full TV control:
 | `select._screen_rotation` | 0°, 90°, 180°, 270° |
 | `select._picture_mode` | Standard, Vivid, Cinema, Custom, Game, Graphics, Photo, Sports |
 | `select._sleep_timer` | Off, 15 min, 30 min, 45 min, 60 min, 90 min, 120 min |
+| `select._brightness_preset` | Min, Low, Medium, High, Max (mapped to % of brightness range) |
 
 ### 📊 Sensors (Diagnostic)
 

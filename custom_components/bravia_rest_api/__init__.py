@@ -32,6 +32,7 @@ PLATFORM_LIST = [
     Platform.MEDIA_PLAYER,
     Platform.REMOTE,
     Platform.BUTTON,
+    Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,

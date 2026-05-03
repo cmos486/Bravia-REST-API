@@ -102,6 +102,15 @@ DEFAULT_PICTURE_MODES: Final = [
     "Sports",
 ]
 
+# Brightness presets (fraction of range 0.0-1.0)
+BRIGHTNESS_PRESETS: Final[dict[str, float]] = {
+    "Min": 0.0,
+    "Low": 0.25,
+    "Medium": 0.5,
+    "High": 0.75,
+    "Max": 1.0,
+}
+
 # WoL
 WOL_PORT: Final = 9
 

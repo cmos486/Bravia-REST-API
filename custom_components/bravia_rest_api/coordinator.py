@@ -44,6 +44,7 @@ class BraviaState:
     external_inputs: list[dict[str, Any]] = field(default_factory=list)
     app_list: list[dict[str, Any]] = field(default_factory=list)
     app_status: list[dict[str, str]] = field(default_factory=list)
+    brightness: int | None = None
     is_available: bool = False
 
     @property
@@ -78,6 +79,9 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         self.client = client
         self.ircc_codes = {}
         self.system_info = {}
+        self.brightness_supported = False
+        self.brightness_min = 0
+        self.brightness_max = 100
         self._app_list_fetched = False
         self._cached_app_list = []
 
@@ -103,6 +107,23 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
             )
         except BraviaError as err:
             _LOGGER.warning("Could not fetch IRCC codes: %s", err)
+
+        # Probe brightness capability (device-specific)
+        try:
+            info = await self.client.get_brightness()
+            if info is not None:
+                self.brightness_supported = True
+                self.brightness_min = int(info.get("min", 0))
+                self.brightness_max = int(info.get("max", 100))
+                _LOGGER.debug(
+                    "Brightness supported: range %d-%d",
+                    self.brightness_min,
+                    self.brightness_max,
+                )
+            else:
+                _LOGGER.debug("Brightness not available on this device")
+        except BraviaError as err:
+            _LOGGER.debug("Could not probe brightness capability: %s", err)
 
     async def _async_update_data(self) -> BraviaState:
         """Fetch latest state from the TV."""
@@ -166,6 +187,14 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
             state.app_status = await self.client.get_app_status_list()
         except BraviaError as err:
             _LOGGER.debug("Could not fetch app status: %s", err)
+
+        if self.brightness_supported:
+            try:
+                info = await self.client.get_brightness()
+                if info is not None:
+                    state.brightness = int(info.get("currentValue", 0))
+            except BraviaError as err:
+                _LOGGER.debug("Could not fetch brightness: %s", err)
 
         return state
 
