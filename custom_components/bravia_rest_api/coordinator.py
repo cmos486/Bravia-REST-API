@@ -83,7 +83,8 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         self.brightness_min = 0
         self.brightness_max = 100
         self._app_list_fetched = False
-        self._cached_app_list = []
+        self._cached_app_list: list[dict[str, Any]] = []
+        self._cached_external_inputs: list[dict[str, Any]] = []
 
     async def async_setup(self) -> None:
         """Perform one-time setup: fetch system info and IRCC codes."""
@@ -171,8 +172,10 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
 
         try:
             state.external_inputs = await self.client.get_external_inputs()
+            self._cached_external_inputs = state.external_inputs
         except BraviaError as err:
             _LOGGER.debug("Could not fetch external inputs: %s", err)
+            state.external_inputs = self._cached_external_inputs
 
         # Fetch app list once (it rarely changes), cache in coordinator
         if not self._app_list_fetched:
