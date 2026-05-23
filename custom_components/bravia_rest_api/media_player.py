@@ -82,19 +82,42 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         self._attr_supported_features = features
 
     def _build_source_map(self) -> None:
-        """Build source map from external inputs and apps."""
+        """Build source map from external inputs, CEC devices, and apps."""
         self._sources = {}
         data = self.coordinator.data
         if not data:
             return
 
         for inp in data.external_inputs:
-            label = inp.get("title", "")
+            title = inp.get("title", "")
             custom_label = inp.get("label", "")
             uri = inp.get("uri", "")
-            name = custom_label if custom_label else label
-            if name and uri:
-                self._sources[name] = {"uri": uri, "type": SOURCE_TYPE_INPUT}
+            if not uri:
+                continue
+
+            if custom_label and custom_label != title and title:
+                # Has a CEC/custom label — expose both the port and the label
+                self._sources[title] = {"uri": uri, "type": SOURCE_TYPE_INPUT}
+                self._sources[custom_label] = {"uri": uri, "type": SOURCE_TYPE_INPUT}
+            else:
+                name = custom_label if custom_label else title
+                if name:
+                    self._sources[name] = {"uri": uri, "type": SOURCE_TYPE_INPUT}
+
+        # Merge CEC devices from content list (extInput:cec URIs).
+        # These override any HDMI-URI entry with the same name so that
+        # selecting a CEC device triggers CEC wake-up.
+        existing_uris = {src["uri"] for src in self._sources.values()}
+        for cec in data.cec_inputs:
+            cec_uri = cec.get("uri", "")
+            cec_title = cec.get("title", "")
+            if not cec_uri or not cec_title:
+                continue
+            if cec_uri not in existing_uris:
+                self._sources[cec_title] = {
+                    "uri": cec_uri,
+                    "type": SOURCE_TYPE_INPUT,
+                }
 
         for app in data.app_list:
             title = html.unescape(app.get("title", ""))
@@ -141,6 +164,17 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         for name, src in self._sources.items():
             if src["uri"] == uri:
                 return name
+
+        # When the TV reports an HDMI URI but a CEC device occupies that port,
+        # prefer the CEC device name so the UI shows "PlayStation" not "HDMI 2".
+        if uri.startswith("extInput:hdmi") and "port=" in uri:
+            port = uri.split("port=")[1].split("&")[0]
+            for name, src in self._sources.items():
+                if (
+                    src["uri"].startswith("extInput:cec")
+                    and f"port={port}" in src["uri"]
+                ):
+                    return name
 
         return html.unescape(title) if title else uri or None
 
@@ -306,9 +340,11 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         data = self.coordinator.data
 
         if media_content_id == "inputs" and data:
+            seen_uris: set[str] = set()
             for inp in data.external_inputs:
                 label = inp.get("label") or inp.get("title", "Unknown")
                 uri = inp.get("uri", "")
+                seen_uris.add(uri)
                 children.append(
                     BrowseMedia(
                         media_class="channel",
@@ -319,6 +355,20 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
                         can_expand=False,
                     )
                 )
+            for cec in data.cec_inputs:
+                uri = cec.get("uri", "")
+                title = cec.get("title", "Unknown")
+                if uri and uri not in seen_uris:
+                    children.append(
+                        BrowseMedia(
+                            media_class="channel",
+                            media_content_id=uri,
+                            media_content_type="input",
+                            title=title,
+                            can_play=True,
+                            can_expand=False,
+                        )
+                    )
         elif media_content_id == "apps" and data:
             for app in data.app_list:
                 title = app.get("title", "Unknown")

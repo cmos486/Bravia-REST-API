@@ -42,6 +42,7 @@ class BraviaState:
     min_volume: int = 0
     playing_content: dict[str, Any] = field(default_factory=dict)
     external_inputs: list[dict[str, Any]] = field(default_factory=list)
+    cec_inputs: list[dict[str, Any]] = field(default_factory=list)
     app_list: list[dict[str, Any]] = field(default_factory=list)
     app_status: list[dict[str, str]] = field(default_factory=list)
     brightness: int | None = None
@@ -85,6 +86,7 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         self._app_list_fetched = False
         self._cached_app_list: list[dict[str, Any]] = []
         self._cached_external_inputs: list[dict[str, Any]] = []
+        self._cached_cec_inputs: list[dict[str, Any]] = []
 
     async def async_setup(self) -> None:
         """Perform one-time setup: fetch system info and IRCC codes."""
@@ -176,6 +178,17 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         except BraviaError as err:
             _LOGGER.debug("Could not fetch external inputs: %s", err)
             state.external_inputs = self._cached_external_inputs
+
+        # Discover CEC devices (e.g. "PlayStation", "Apple TV") via content list.
+        # These have URIs like extInput:cec?type=player&port=N that trigger
+        # CEC wake-up, unlike plain HDMI URIs.
+        try:
+            cec_list = await self.client.get_content_list("extInput:cec")
+            if cec_list:
+                self._cached_cec_inputs = cec_list
+        except BraviaError:
+            _LOGGER.debug("CEC content list not available on this device")
+        state.cec_inputs = self._cached_cec_inputs
 
         # Fetch app list once (it rarely changes), cache in coordinator
         if not self._app_list_fetched:
