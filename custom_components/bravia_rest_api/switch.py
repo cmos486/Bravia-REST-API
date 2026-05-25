@@ -38,6 +38,7 @@ class BraviaLEDSwitch(BraviaEntity, SwitchEntity):
     """Switch to control the LED indicator."""
 
     _attr_translation_key = "led_indicator"
+    _attr_name = "LED Indicator"
     _attr_icon = "mdi:led-on"
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -84,6 +85,7 @@ class BraviaWoLSwitch(BraviaEntity, SwitchEntity):
     """Switch to control Wake-on-LAN mode."""
 
     _attr_translation_key = "wake_on_lan"
+    _attr_name = "Wake-on-LAN"
     _attr_icon = "mdi:power-plug"
     _attr_entity_category = EntityCategory.CONFIG
 

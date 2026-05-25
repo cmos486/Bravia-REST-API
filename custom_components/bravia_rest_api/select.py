@@ -46,6 +46,7 @@ class BraviaSoundOutputSelect(BraviaEntity, SelectEntity):
     """Select entity for sound output mode."""
 
     _attr_translation_key = "sound_output"
+    _attr_name = "Sound Output"
     _attr_icon = "mdi:speaker"
 
     def __init__(
@@ -105,6 +106,7 @@ class BraviaScreenRotationSelect(BraviaEntity, SelectEntity):
     """Select entity for screen rotation."""
 
     _attr_translation_key = "screen_rotation"
+    _attr_name = "Screen Rotation"
     _attr_icon = "mdi:screen-rotation"
 
     def __init__(
@@ -154,6 +156,7 @@ class BraviaPictureModeSelect(BraviaEntity, SelectEntity):
     """Select entity for picture mode (scene setting)."""
 
     _attr_translation_key = "picture_mode"
+    _attr_name = "Picture Mode"
     _attr_icon = "mdi:image-filter-hdr"
 
     def __init__(
@@ -197,6 +200,7 @@ class BraviaSleepTimerSelect(BraviaEntity, SelectEntity):
     """Select entity for sleep timer."""
 
     _attr_translation_key = "sleep_timer"
+    _attr_name = "Sleep Timer"
     _attr_icon = "mdi:timer-outline"
 
     def __init__(
@@ -255,6 +259,7 @@ class BraviaBrightnessSelect(BraviaEntity, SelectEntity):
     """Select entity for brightness presets."""
 
     _attr_translation_key = "brightness_preset"
+    _attr_name = "Brightness Preset"
     _attr_icon = "mdi:brightness-6"
 
     def __init__(

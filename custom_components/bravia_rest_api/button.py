@@ -33,18 +33,21 @@ SYSTEM_BUTTONS: tuple[BraviaButtonDescription, ...] = (
     BraviaButtonDescription(
         key="reboot",
         translation_key="reboot",
+        name="Reboot",
         icon="mdi:restart",
         press_fn=lambda client: client.request_reboot(),
     ),
     BraviaButtonDescription(
         key="terminate_apps",
         translation_key="terminate_apps",
+        name="Terminate Apps",
         icon="mdi:close-box-multiple",
         press_fn=lambda client: client.terminate_apps(),
     ),
     BraviaButtonDescription(
         key="picture_off",
         translation_key="picture_off",
+        name="Picture Off",
         icon="mdi:monitor-off",
         press_fn=lambda client: client.set_power_saving_mode(
             POWER_SAVING_PICTURE_OFF
@@ -53,6 +56,7 @@ SYSTEM_BUTTONS: tuple[BraviaButtonDescription, ...] = (
     BraviaButtonDescription(
         key="picture_on",
         translation_key="picture_on",
+        name="Picture On",
         icon="mdi:monitor",
         press_fn=lambda client: client.set_power_saving_mode(POWER_SAVING_OFF),
     ),

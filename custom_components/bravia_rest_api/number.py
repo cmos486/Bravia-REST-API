@@ -32,6 +32,7 @@ class BraviaBrightnessNumber(BraviaEntity, NumberEntity):
     """Number entity for TV picture brightness."""
 
     _attr_translation_key = "brightness"
+    _attr_name = "Brightness"
     _attr_icon = "mdi:brightness-6"
     _attr_mode = NumberMode.SLIDER
     _attr_native_step = 1.0

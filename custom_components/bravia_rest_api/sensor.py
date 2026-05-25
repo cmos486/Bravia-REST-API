@@ -31,6 +31,7 @@ SENSOR_DESCRIPTIONS: tuple[BraviaSensorDescription, ...] = (
     BraviaSensorDescription(
         key="model",
         translation_key="model",
+        name="Model",
         icon="mdi:television",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda info: info.get("model"),
@@ -38,6 +39,7 @@ SENSOR_DESCRIPTIONS: tuple[BraviaSensorDescription, ...] = (
     BraviaSensorDescription(
         key="firmware",
         translation_key="firmware",
+        name="Firmware",
         icon="mdi:chip",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda info: info.get("generation"),
@@ -45,6 +47,7 @@ SENSOR_DESCRIPTIONS: tuple[BraviaSensorDescription, ...] = (
     BraviaSensorDescription(
         key="serial_number",
         translation_key="serial_number",
+        name="Serial Number",
         icon="mdi:identifier",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda info: info.get("serial"),
@@ -52,6 +55,7 @@ SENSOR_DESCRIPTIONS: tuple[BraviaSensorDescription, ...] = (
     BraviaSensorDescription(
         key="mac_address",
         translation_key="mac_address",
+        name="MAC Address",
         icon="mdi:ethernet",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda info: info.get("macAddr"),
