@@ -89,6 +89,8 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
             return
 
         for inp in data.external_inputs:
+            if not isinstance(inp, dict):
+                continue
             title = inp.get("title", "")
             custom_label = inp.get("label", "")
             uri = inp.get("uri", "")
@@ -109,6 +111,8 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
         # selecting a CEC device triggers CEC wake-up.
         existing_uris = {src["uri"] for src in self._sources.values()}
         for cec in data.cec_inputs:
+            if not isinstance(cec, dict):
+                continue
             cec_uri = cec.get("uri", "")
             cec_title = cec.get("title", "")
             if not cec_uri or not cec_title:

@@ -124,6 +124,12 @@ class BraviaClient:
             raise BraviaConnectionError(
                 f"Timeout connecting to Bravia TV at {self._host}"
             ) from err
+        except ValueError as err:
+            # json.JSONDecodeError inherits from ValueError — older TVs may
+            # return non-JSON responses for unsupported API versions.
+            raise BraviaApiError(
+                0, f"Invalid response from {method}: {err}"
+            ) from err
 
         if "error" in data:
             error = data["error"]
@@ -369,7 +375,10 @@ class BraviaClient:
                 "getCurrentExternalInputsStatus",
                 version="1.1",
             )
-        except BraviaApiError:
+        except BraviaError:
+            # Catch all Bravia errors (not just BraviaApiError) so the v1.0
+            # fallback also runs when v1.1 returns error code 7
+            # (BraviaTurnedOffError) on older TVs like the KD-49X8005C.
             result = await self._request(
                 SERVICE_AV_CONTENT,
                 "getCurrentExternalInputsStatus",

@@ -182,11 +182,13 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         # Discover CEC devices (e.g. "PlayStation", "Apple TV") via content list.
         # These have URIs like extInput:cec?type=player&port=N that trigger
         # CEC wake-up, unlike plain HDMI URIs.
+        # CEC is optional — catch broadly so older/non-Pro TVs that don't
+        # support this call never break the update cycle.
         try:
             cec_list = await self.client.get_content_list("extInput:cec")
-            if cec_list:
+            if isinstance(cec_list, list) and cec_list:
                 self._cached_cec_inputs = cec_list
-        except BraviaError:
+        except Exception:  # noqa: BLE001
             _LOGGER.debug("CEC content list not available on this device")
         state.cec_inputs = self._cached_cec_inputs
 
