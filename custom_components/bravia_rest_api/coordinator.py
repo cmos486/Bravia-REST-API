@@ -174,6 +174,21 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
 
         try:
             state.external_inputs = await self.client.get_external_inputs()
+            # Preserve CEC/custom labels from cache when the current fetch
+            # lacks them (v1.0 fallback on older TVs omits the label field).
+            if self._cached_external_inputs:
+                cached_labels = {
+                    inp["uri"]: inp["label"]
+                    for inp in self._cached_external_inputs
+                    if isinstance(inp, dict) and inp.get("label")
+                }
+                for inp in state.external_inputs:
+                    if (
+                        isinstance(inp, dict)
+                        and not inp.get("label")
+                        and inp.get("uri") in cached_labels
+                    ):
+                        inp["label"] = cached_labels[inp["uri"]]
             self._cached_external_inputs = state.external_inputs
         except BraviaError as err:
             _LOGGER.debug("Could not fetch external inputs: %s", err)

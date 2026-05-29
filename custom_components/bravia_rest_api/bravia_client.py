@@ -413,9 +413,15 @@ class BraviaClient:
         params: dict[str, Any] = {"stIdx": start, "cnt": count}
         if uri is not None:
             params["uri"] = uri
-        result = await self._request(
-            SERVICE_AV_CONTENT, "getContentList", [params], version="1.5"
-        )
+        try:
+            result = await self._request(
+                SERVICE_AV_CONTENT, "getContentList", [params], version="1.5"
+            )
+        except BraviaError:
+            # Older TVs may not support v1.5; fall back to v1.2.
+            result = await self._request(
+                SERVICE_AV_CONTENT, "getContentList", [params], version="1.2"
+            )
         return result[0] if result and isinstance(result[0], list) else result
 
     # ------------------------------------------------------------------
