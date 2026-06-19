@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 import aiohttp
 import voluptuous as vol
 
-from homeassistant.components import ssdp
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -22,6 +21,7 @@ from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import TextSelector, TextSelectorConfig
+from homeassistant.helpers.service_info import ssdp
 
 from .bravia_client import (
     BraviaAuthError,
