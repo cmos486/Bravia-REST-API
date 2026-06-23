@@ -46,6 +46,7 @@ class BraviaState:
     app_list: list[dict[str, Any]] = field(default_factory=list)
     app_status: list[dict[str, str]] = field(default_factory=list)
     brightness: int | None = None
+    sound_output: str | None = None
     is_available: bool = False
 
     @property
@@ -228,6 +229,17 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
                     state.brightness = int(info.get("currentValue", 0))
             except BraviaError as err:
                 _LOGGER.debug("Could not fetch brightness: %s", err)
+
+        try:
+            sound_settings = await self.client.get_sound_settings(
+                "outputTerminal"
+            )
+            for setting in sound_settings:
+                if isinstance(setting, dict) and setting.get("target") == "outputTerminal":
+                    state.sound_output = setting.get("currentValue")
+                    break
+        except BraviaError as err:
+            _LOGGER.debug("Could not fetch sound output setting: %s", err)
 
         return state
 

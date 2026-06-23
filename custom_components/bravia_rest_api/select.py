@@ -6,7 +6,7 @@ import logging
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .bravia_client import BraviaError
@@ -57,12 +57,14 @@ class BraviaSoundOutputSelect(BraviaEntity, SelectEntity):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.unique_id}_sound_output"
         self._attr_options = list(SOUND_OUTPUT_OPTIONS.values())
-        self._current: str | None = None
 
     @property
     def current_option(self) -> str | None:
         """Return current sound output."""
-        return self._current
+        data = self.coordinator.data
+        if not data or data.sound_output is None:
+            return None
+        return SOUND_OUTPUT_OPTIONS.get(data.sound_output)
 
     async def async_select_option(self, option: str) -> None:
         """Set the sound output mode."""
@@ -81,25 +83,14 @@ class BraviaSoundOutputSelect(BraviaEntity, SelectEntity):
             await self.coordinator.client.set_sound_settings(
                 [{"target": "outputTerminal", "value": api_value}]
             )
-            self._current = option
         except BraviaError as err:
             _LOGGER.error("Failed to set sound output: %s", err)
+        await self.coordinator.async_request_refresh()
 
-    async def async_added_to_hass(self) -> None:
-        """Fetch initial sound output setting when added."""
-        await super().async_added_to_hass()
-        try:
-            settings = await self.coordinator.client.get_speaker_settings(
-                "outputTerminal"
-            )
-            if settings:
-                for setting in settings:
-                    if isinstance(setting, dict) and setting.get("target") == "outputTerminal":
-                        value = setting.get("currentValue", "")
-                        self._current = SOUND_OUTPUT_OPTIONS.get(value)
-                        break
-        except BraviaError:
-            pass
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self.async_write_ha_state()
 
 
 class BraviaScreenRotationSelect(BraviaEntity, SelectEntity):

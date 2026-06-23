@@ -329,6 +329,15 @@ class BraviaClient:
         )
         return result[0] if result and isinstance(result[0], list) else result
 
+    async def get_sound_settings(
+        self, target: str = ""
+    ) -> list[dict[str, Any]]:
+        """Get sound settings (e.g., output terminal)."""
+        result = await self._request(
+            SERVICE_AUDIO, "getSoundSettings", [{"target": target}], version="1.1"
+        )
+        return result[0] if result and isinstance(result[0], list) else result
+
     async def set_sound_settings(
         self, settings: list[dict[str, str]]
     ) -> None:
