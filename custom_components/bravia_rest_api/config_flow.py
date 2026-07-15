@@ -157,6 +157,9 @@ class BraviaRestApiConfigFlow(ConfigFlow, domain=DOMAIN):
                 ssdp.ATTR_UPNP_MODEL_NAME, "Sony Bravia"
             )
 
+        # Check if any existing entry already uses this host
+        self._async_abort_entries_match({CONF_HOST: host})
+
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured(updates={CONF_HOST: host})
 
