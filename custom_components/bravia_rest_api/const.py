@@ -8,11 +8,14 @@ CONF_PSK: Final = "psk"
 CONF_MAC: Final = "mac"
 CONF_USE_SSL: Final = "use_ssl"
 CONF_EXCLUDED_SOURCES: Final = "excluded_sources"
+CONF_SCAN_INTERVAL: Final = "scan_interval"
 
 YAML_CONFIG_KEY: Final = f"{DOMAIN}_yaml"
 
 DEFAULT_PORT: Final = 80
 DEFAULT_SCAN_INTERVAL: Final = 15  # seconds
+MIN_SCAN_INTERVAL: Final = 1  # seconds
+MAX_SCAN_INTERVAL: Final = 60  # seconds
 REQUEST_TIMEOUT: Final = 5  # seconds
 
 PLATFORMS: Final = [

@@ -20,7 +20,13 @@ from homeassistant.const import CONF_HOST
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.selector import TextSelector, TextSelectorConfig
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+)
 from homeassistant.helpers.service_info import ssdp
 
 from .bravia_client import (
@@ -29,7 +35,17 @@ from .bravia_client import (
     BraviaConnectionError,
     BraviaError,
 )
-from .const import CONF_EXCLUDED_SOURCES, CONF_MAC, CONF_PSK, CONF_USE_SSL, DOMAIN
+from .const import (
+    CONF_EXCLUDED_SOURCES,
+    CONF_MAC,
+    CONF_PSK,
+    CONF_SCAN_INTERVAL,
+    CONF_USE_SSL,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    MAX_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -212,8 +228,15 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
             if isinstance(excluded, str):
                 # Text area fallback: split by newlines
                 excluded = [s.strip() for s in excluded.splitlines() if s.strip()]
+            scan_interval = int(
+                user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            )
             return self.async_create_entry(
-                title="", data={CONF_EXCLUDED_SOURCES: excluded}
+                title="",
+                data={
+                    CONF_EXCLUDED_SOURCES: excluded,
+                    CONF_SCAN_INTERVAL: scan_interval,
+                },
             )
 
         # Build available sources from coordinator
@@ -237,6 +260,19 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
         current_excluded = self.config_entry.options.get(
             CONF_EXCLUDED_SOURCES, []
         )
+        current_scan_interval = self.config_entry.options.get(
+            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        )
+
+        scan_interval_selector = NumberSelector(
+            NumberSelectorConfig(
+                min=MIN_SCAN_INTERVAL,
+                max=MAX_SCAN_INTERVAL,
+                step=1,
+                unit_of_measurement="s",
+                mode=NumberSelectorMode.SLIDER,
+            )
+        )
 
         if sources:
             # Multi-select with current sources
@@ -249,6 +285,10 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
             schema = vol.Schema(
                 {
                     vol.Optional(
+                        CONF_SCAN_INTERVAL,
+                        default=current_scan_interval,
+                    ): scan_interval_selector,
+                    vol.Optional(
                         CONF_EXCLUDED_SOURCES, default=valid_default
                     ): cv.multi_select({s: s for s in sorted(sources)}),
                 }
@@ -257,6 +297,10 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
             # TV off fallback: multiline text input
             schema = vol.Schema(
                 {
+                    vol.Optional(
+                        CONF_SCAN_INTERVAL,
+                        default=current_scan_interval,
+                    ): scan_interval_selector,
                     vol.Optional(
                         CONF_EXCLUDED_SOURCES,
                         default="\n".join(current_excluded),

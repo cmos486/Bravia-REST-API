@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import logging
+from datetime import timedelta
 from typing import Any
 
 import voluptuous as vol
@@ -18,7 +19,9 @@ from .bravia_client import BraviaClient, BraviaError
 from .const import (
     CONF_EXCLUDED_SOURCES,
     CONF_PSK,
+    CONF_SCAN_INTERVAL,
     CONF_USE_SSL,
+    DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     IRCC_CODES,
     POWER_SAVING_OFF,
@@ -146,6 +149,10 @@ async def _async_update_listener(
     """Handle options update without restarting the coordinator."""
     coordinator = hass.data[DOMAIN].get(entry.entry_id)
     if coordinator:
+        new_interval = entry.options.get(
+            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        )
+        coordinator.update_interval = timedelta(seconds=new_interval)
         coordinator.async_set_updated_data(coordinator.data)
 
 

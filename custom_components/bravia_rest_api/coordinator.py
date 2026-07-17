@@ -23,6 +23,7 @@ from .bravia_client import (
 )
 from .const import (
     CONF_PSK,
+    CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     POWER_STATUS_ACTIVE,
@@ -71,11 +72,14 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         client: BraviaClient,
         entry: ConfigEntry,
     ) -> None:
+        scan_interval = entry.options.get(
+            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        )
         super().__init__(
             hass,
             _LOGGER,
             name=f"{DOMAIN}_{entry.data[CONF_HOST]}",
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+            update_interval=timedelta(seconds=scan_interval),
             config_entry=entry,
         )
         self.client = client
