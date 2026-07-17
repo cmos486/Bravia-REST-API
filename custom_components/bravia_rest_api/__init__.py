@@ -18,6 +18,7 @@ from .bravia_client import BraviaClient, BraviaError
 from .const import (
     CONF_EXCLUDED_SOURCES,
     CONF_PSK,
+    CONF_USE_SSL,
     DOMAIN,
     IRCC_CODES,
     POWER_SAVING_OFF,
@@ -116,9 +117,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bravia REST API from a config entry."""
     host = entry.data[CONF_HOST]
     psk = entry.data[CONF_PSK]
+    use_ssl = entry.data.get(CONF_USE_SSL, False)
 
-    session = async_get_clientsession(hass)
-    client = BraviaClient(host, psk, session)
+    session = async_get_clientsession(hass, verify_ssl=not use_ssl)
+    client = BraviaClient(host, psk, session, use_ssl=use_ssl)
 
     coordinator = BraviaCoordinator(hass, client, entry)
     await coordinator.async_setup()

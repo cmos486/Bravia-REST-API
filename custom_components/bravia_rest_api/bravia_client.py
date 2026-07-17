@@ -58,13 +58,16 @@ class BraviaClient:
         host: str,
         psk: str,
         session: aiohttp.ClientSession,
-        port: int = DEFAULT_PORT,
+        port: int | None = None,
+        use_ssl: bool = False,
     ) -> None:
         self._host = host
         self._psk = psk
         self._session = session
-        self._port = port
-        self._base_url = f"http://{host}:{port}/sony"
+        self._use_ssl = use_ssl
+        scheme = "https" if use_ssl else "http"
+        self._port = port or (443 if use_ssl else DEFAULT_PORT)
+        self._base_url = f"{scheme}://{host}:{self._port}/sony"
         self._request_id = 0
 
     @property
@@ -102,10 +105,10 @@ class BraviaClient:
                 async with self._session.post(
                     url, json=payload, headers=headers
                 ) as resp:
-                    if resp.status == 403:
+                    if resp.status in (401, 403):
                         raise BraviaAuthError(
                             f"Authentication failed for {method} "
-                            f"(HTTP 403). Check your PSK."
+                            f"(HTTP {resp.status}). Check your PSK."
                         )
                     if resp.status == 404:
                         raise BraviaApiError(
@@ -156,7 +159,7 @@ class BraviaClient:
         try:
             async with asyncio.timeout(REQUEST_TIMEOUT):
                 async with self._session.post(url, data=body, headers=headers) as resp:
-                    if resp.status == 403:
+                    if resp.status in (401, 403):
                         raise BraviaAuthError("Authentication failed for IRCC command")
                     resp.raise_for_status()
         except BraviaError:

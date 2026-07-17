@@ -6,6 +6,7 @@ DOMAIN: Final = "bravia_rest_api"
 
 CONF_PSK: Final = "psk"
 CONF_MAC: Final = "mac"
+CONF_USE_SSL: Final = "use_ssl"
 CONF_EXCLUDED_SOURCES: Final = "excluded_sources"
 
 YAML_CONFIG_KEY: Final = f"{DOMAIN}_yaml"

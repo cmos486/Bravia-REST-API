@@ -29,7 +29,7 @@ from .bravia_client import (
     BraviaConnectionError,
     BraviaError,
 )
-from .const import CONF_EXCLUDED_SOURCES, CONF_MAC, CONF_PSK, DOMAIN
+from .const import CONF_EXCLUDED_SOURCES, CONF_MAC, CONF_PSK, CONF_USE_SSL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,18 +65,13 @@ class BraviaRestApiConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             host = user_input[CONF_HOST].strip()
-            psk = user_input[CONF_PSK]
+            psk = user_input[CONF_PSK].strip()
 
-            session = async_get_clientsession(self.hass)
-            client = BraviaClient(host, psk, session)
+            system_info, use_ssl = await self._try_connect(host, psk)
 
-            try:
-                system_info = await client.get_system_info()
-            except BraviaAuthError:
+            if system_info is None and use_ssl is None:
                 errors["base"] = "invalid_auth"
-            except BraviaConnectionError:
-                errors["base"] = "cannot_connect"
-            except BraviaError:
+            elif system_info is None:
                 errors["base"] = "cannot_connect"
             else:
                 model = system_info.get("model")
@@ -98,6 +93,7 @@ class BraviaRestApiConfigFlow(ConfigFlow, domain=DOMAIN):
                             CONF_HOST: host,
                             CONF_PSK: psk,
                             CONF_MAC: mac,
+                            CONF_USE_SSL: use_ssl,
                             "model": model,
                             "serial": serial,
                             "firmware": firmware,
@@ -120,6 +116,39 @@ class BraviaRestApiConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={"model": self._discovered_model or ""},
         )
+
+    async def _try_connect(
+        self, host: str, psk: str
+    ) -> tuple[dict[str, Any] | None, bool | None]:
+        """Try HTTP then HTTPS to connect to the TV.
+
+        Returns (system_info, use_ssl).  On auth failure with both protocols
+        returns (None, None).  On connection failure returns (None, False).
+        """
+        # --- attempt 1: plain HTTP ---
+        session = async_get_clientsession(self.hass)
+        client = BraviaClient(host, psk, session)
+        try:
+            return await client.get_system_info(), False
+        except BraviaAuthError:
+            http_auth_failed = True
+        except (BraviaConnectionError, BraviaError):
+            http_auth_failed = False
+
+        # --- attempt 2: HTTPS (self-signed cert OK) ---
+        ssl_session = async_get_clientsession(self.hass, verify_ssl=False)
+        client = BraviaClient(host, psk, ssl_session, use_ssl=True)
+        try:
+            _LOGGER.debug("HTTP failed, trying HTTPS for %s", host)
+            return await client.get_system_info(), True
+        except BraviaAuthError:
+            # Both protocols got auth rejection → PSK is wrong
+            return None, None
+        except (BraviaConnectionError, BraviaError):
+            # HTTPS also unreachable — report the original error type
+            if http_auth_failed:
+                return None, None
+            return None, False
 
     async def async_step_ssdp(
         self, discovery_info: ssdp.SsdpServiceInfo
