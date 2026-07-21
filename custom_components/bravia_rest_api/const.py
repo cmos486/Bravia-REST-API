@@ -9,13 +9,16 @@ CONF_MAC: Final = "mac"
 CONF_USE_SSL: Final = "use_ssl"
 CONF_EXCLUDED_SOURCES: Final = "excluded_sources"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
+CONF_SCAN_INTERVAL_STANDBY: Final = "scan_interval_standby"
 
 YAML_CONFIG_KEY: Final = f"{DOMAIN}_yaml"
 
 DEFAULT_PORT: Final = 80
 DEFAULT_SCAN_INTERVAL: Final = 15  # seconds
+DEFAULT_SCAN_INTERVAL_STANDBY: Final = 60  # seconds
 MIN_SCAN_INTERVAL: Final = 1  # seconds
 MAX_SCAN_INTERVAL: Final = 60  # seconds
+MAX_SCAN_INTERVAL_STANDBY: Final = 300  # seconds
 REQUEST_TIMEOUT: Final = 5  # seconds
 
 PLATFORMS: Final = [

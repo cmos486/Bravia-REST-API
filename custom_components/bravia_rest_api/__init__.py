@@ -20,8 +20,10 @@ from .const import (
     CONF_EXCLUDED_SOURCES,
     CONF_PSK,
     CONF_SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL_STANDBY,
     CONF_USE_SSL,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL_STANDBY,
     DOMAIN,
     IRCC_CODES,
     POWER_SAVING_OFF,
@@ -152,7 +154,18 @@ async def _async_update_listener(
         new_interval = entry.options.get(
             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
         )
-        coordinator.update_interval = timedelta(seconds=new_interval)
+        new_interval_standby = entry.options.get(
+            CONF_SCAN_INTERVAL_STANDBY, DEFAULT_SCAN_INTERVAL_STANDBY
+        )
+        coordinator._scan_interval_on = timedelta(seconds=new_interval)
+        coordinator._scan_interval_standby = timedelta(
+            seconds=new_interval_standby
+        )
+        # Apply the correct interval based on current state
+        if coordinator.data and coordinator.data.is_on:
+            coordinator.update_interval = coordinator._scan_interval_on
+        else:
+            coordinator.update_interval = coordinator._scan_interval_standby
         coordinator.async_set_updated_data(coordinator.data)
 
 

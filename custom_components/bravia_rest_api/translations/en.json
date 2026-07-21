@@ -29,11 +29,13 @@
                 "title": "Bravia REST API Options",
                 "description": "Configure source list filtering.",
                 "data": {
-                    "scan_interval": "Refresh Interval",
+                    "scan_interval": "Refresh Interval (TV On)",
+                    "scan_interval_standby": "Refresh Interval (Standby)",
                     "excluded_sources": "Excluded Sources"
                 },
                 "data_description": {
-                    "scan_interval": "How often to poll the TV for state updates (in seconds). Lower values provide faster state synchronization but increase network traffic.",
+                    "scan_interval": "How often to poll the TV for state updates when the TV is on (in seconds).",
+                    "scan_interval_standby": "How often to poll the TV when in standby (in seconds). Higher values reduce network traffic when the TV is off.",
                     "excluded_sources": "Sources to hide from the source list dropdown. If the TV is off, enter one source name per line."
                 }
             }

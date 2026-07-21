@@ -24,7 +24,9 @@ from .bravia_client import (
 from .const import (
     CONF_PSK,
     CONF_SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL_STANDBY,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL_STANDBY,
     DOMAIN,
     POWER_STATUS_ACTIVE,
 )
@@ -92,6 +94,12 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         self._cached_app_list: list[dict[str, Any]] = []
         self._cached_external_inputs: list[dict[str, Any]] = []
         self._cached_cec_inputs: list[dict[str, Any]] = []
+        self._scan_interval_on = timedelta(seconds=scan_interval)
+        self._scan_interval_standby = timedelta(
+            seconds=entry.options.get(
+                CONF_SCAN_INTERVAL_STANDBY, DEFAULT_SCAN_INTERVAL_STANDBY
+            )
+        )
 
     async def async_setup(self) -> None:
         """Perform one-time setup: fetch system info and IRCC codes."""
@@ -148,11 +156,14 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
         except BraviaError as err:
             raise UpdateFailed(f"Error fetching power status: {err}") from err
 
-        # If TV is off, return minimal state
+        # If TV is off, use standby interval and return minimal state
         if not state.is_on:
+            self.update_interval = self._scan_interval_standby
             return state
 
-        # TV is on — fetch detailed state
+        # TV is on — use active interval and fetch detailed state
+        self.update_interval = self._scan_interval_on
+
         try:
             volume_info = await self.client.get_volume_info()
             # Prefer "speaker" or "" target, fall back to first available

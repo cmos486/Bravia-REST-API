@@ -40,10 +40,13 @@ from .const import (
     CONF_MAC,
     CONF_PSK,
     CONF_SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL_STANDBY,
     CONF_USE_SSL,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL_STANDBY,
     DOMAIN,
     MAX_SCAN_INTERVAL,
+    MAX_SCAN_INTERVAL_STANDBY,
     MIN_SCAN_INTERVAL,
 )
 
@@ -231,11 +234,17 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
             scan_interval = int(
                 user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
             )
+            scan_interval_standby = int(
+                user_input.get(
+                    CONF_SCAN_INTERVAL_STANDBY, DEFAULT_SCAN_INTERVAL_STANDBY
+                )
+            )
             return self.async_create_entry(
                 title="",
                 data={
                     CONF_EXCLUDED_SOURCES: excluded,
                     CONF_SCAN_INTERVAL: scan_interval,
+                    CONF_SCAN_INTERVAL_STANDBY: scan_interval_standby,
                 },
             )
 
@@ -263,11 +272,24 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
         current_scan_interval = self.config_entry.options.get(
             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
         )
+        current_scan_interval_standby = self.config_entry.options.get(
+            CONF_SCAN_INTERVAL_STANDBY, DEFAULT_SCAN_INTERVAL_STANDBY
+        )
 
         scan_interval_selector = NumberSelector(
             NumberSelectorConfig(
                 min=MIN_SCAN_INTERVAL,
                 max=MAX_SCAN_INTERVAL,
+                step=1,
+                unit_of_measurement="s",
+                mode=NumberSelectorMode.SLIDER,
+            )
+        )
+
+        scan_interval_standby_selector = NumberSelector(
+            NumberSelectorConfig(
+                min=MIN_SCAN_INTERVAL,
+                max=MAX_SCAN_INTERVAL_STANDBY,
                 step=1,
                 unit_of_measurement="s",
                 mode=NumberSelectorMode.SLIDER,
@@ -289,6 +311,10 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
                         default=current_scan_interval,
                     ): scan_interval_selector,
                     vol.Optional(
+                        CONF_SCAN_INTERVAL_STANDBY,
+                        default=current_scan_interval_standby,
+                    ): scan_interval_standby_selector,
+                    vol.Optional(
                         CONF_EXCLUDED_SOURCES, default=valid_default
                     ): cv.multi_select({s: s for s in sorted(sources)}),
                 }
@@ -301,6 +327,10 @@ class BraviaRestApiOptionsFlow(OptionsFlow):
                         CONF_SCAN_INTERVAL,
                         default=current_scan_interval,
                     ): scan_interval_selector,
+                    vol.Optional(
+                        CONF_SCAN_INTERVAL_STANDBY,
+                        default=current_scan_interval_standby,
+                    ): scan_interval_standby_selector,
                     vol.Optional(
                         CONF_EXCLUDED_SOURCES,
                         default="\n".join(current_excluded),
