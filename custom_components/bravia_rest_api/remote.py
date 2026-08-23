@@ -88,10 +88,7 @@ class BraviaRemote(BraviaEntity, RemoteEntity):
                     if cmd.endswith("==") or cmd.endswith("Aw=="):
                         await self.coordinator.client.send_ircc(cmd)
                     else:
-                        code = (
-                            self.coordinator.ircc_codes.get(cmd)
-                            or IRCC_CODES.get(cmd)
-                        )
+                        code = self.coordinator.resolve_ircc_code(cmd)
                         if code is None:
                             _LOGGER.error(
                                 "Unknown IRCC command '%s'. Check available_commands attribute.",

@@ -232,3 +232,16 @@ IRCC_CODES: Final[dict[str, str]] = {
     "FootballMode": "AAAAAgAAABoAAAB2Aw==",
     "Social": "AAAAAgAAABoAAAB0Aw==",
 }
+
+# Aliases for IRCC command names.
+# Some Sony TVs report cursor commands as "CursorLeft" while others use "Left".
+# When resolving a command by name, these aliases are tried against TV-discovered
+# codes if the primary name is not found.
+IRCC_COMMAND_ALIASES: Final[dict[str, tuple[str, ...]]] = {
+    "Up": ("CursorUp",),
+    "Down": ("CursorDown",),
+    "Left": ("CursorLeft",),
+    "Right": ("CursorRight",),
+    "Confirm": ("DpadCenter", "Select", "Enter"),
+    "Return": ("Back",),
+}

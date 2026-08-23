@@ -28,6 +28,8 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL_STANDBY,
     DOMAIN,
+    IRCC_CODES,
+    IRCC_COMMAND_ALIASES,
     POWER_STATUS_ACTIVE,
 )
 
@@ -258,18 +260,40 @@ class BraviaCoordinator(DataUpdateCoordinator[BraviaState]):
 
         return state
 
+    def resolve_ircc_code(self, command: str) -> str | None:
+        """Resolve an IRCC command name to its code.
+
+        Checks TV-discovered codes first (from getRemoteControllerInfo),
+        including common name aliases, then falls back to hardcoded codes.
+        """
+        # 1. Exact match in discovered codes
+        code = self.ircc_codes.get(command)
+        if code:
+            return code
+
+        # 2. Try aliases in discovered codes (e.g. "Left" -> "CursorLeft")
+        for alias in IRCC_COMMAND_ALIASES.get(command, ()):
+            code = self.ircc_codes.get(alias)
+            if code:
+                return code
+
+        # 3. Hardcoded fallback
+        return IRCC_CODES.get(command)
+
     def get_ircc_code(self, command: str) -> str | None:
         """Look up an IRCC code by command name."""
-        return self.ircc_codes.get(command)
+        return self.resolve_ircc_code(command)
 
     async def send_ircc_by_name(self, command: str) -> None:
         """Send an IRCC code by command name."""
-        code = self.get_ircc_code(command)
+        code = self.resolve_ircc_code(command)
         if code is None:
             _LOGGER.error(
                 "Unknown IRCC command '%s'. Available: %s",
                 command,
-                ", ".join(sorted(self.ircc_codes.keys())),
+                ", ".join(sorted(
+                    set(self.ircc_codes.keys()) | set(IRCC_CODES.keys())
+                )),
             )
             return
         await self.client.send_ircc(code)

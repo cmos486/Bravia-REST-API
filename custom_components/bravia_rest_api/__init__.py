@@ -245,8 +245,7 @@ def _register_services(hass: HomeAssistant) -> None:
                 # Raw base64 IRCC code
                 await coordinator.client.send_ircc(command)
             else:
-                # Try TV-discovered codes first, then predefined fallback
-                code = coordinator.ircc_codes.get(command) or IRCC_CODES.get(command)
+                code = coordinator.resolve_ircc_code(command)
                 if code is None:
                     _LOGGER.error(
                         "Unknown IRCC command '%s'. Available: %s",
