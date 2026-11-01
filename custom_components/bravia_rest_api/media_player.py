@@ -137,7 +137,9 @@ class BraviaMediaPlayer(BraviaEntity, MediaPlayerEntity):
             return MediaPlayerState.OFF
         if not data.is_on:
             return MediaPlayerState.OFF
-        if data.playing_content and data.playing_content.get("uri"):
+        if data.playing_content and (
+            data.playing_content.get("uri") or data.playing_content.get("title")
+        ):
             return MediaPlayerState.ON
         return MediaPlayerState.IDLE
 
