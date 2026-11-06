@@ -111,6 +111,30 @@ blank_screen:
       selector:
         boolean:
 
+open_url:
+  name: Open URL
+  description: >-
+    Open a URL in the TV's built-in browser.
+    The URL is opened using the webappruntime app.
+  fields:
+    entity_id:
+      name: Entity
+      description: "Media player entity of the TV."
+      required: true
+      example: "media_player.bravia_api"
+      selector:
+        entity:
+          integration: bravia_rest_api
+          domain: media_player
+    url:
+      name: URL
+      description: >-
+        The URL to open in the browser (e.g., "https://example.com").
+      required: true
+      example: "https://example.com"
+      selector:
+        text:
+
 get_installed_apps:
   name: Get Installed Apps
   description: >-

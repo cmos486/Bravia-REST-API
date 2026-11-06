@@ -453,6 +453,13 @@ class BraviaClient:
             SERVICE_APP_CONTROL, "setActiveApp", [{"uri": uri}]
         )
 
+    async def open_url(self, url: str) -> None:
+        """Open a URL in the TV's built-in browser."""
+        from urllib.parse import quote
+
+        browser_uri = f"localapp://webappruntime?url={quote(url, safe='')}"
+        await self.set_active_app(browser_uri)
+
     async def get_app_status_list(self) -> list[dict[str, str]]:
         """Get application status list (textInput, cursorDisplay, webBrowse)."""
         result = await self._request(

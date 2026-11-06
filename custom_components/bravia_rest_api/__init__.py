@@ -50,6 +50,7 @@ SERVICE_SEND_IRCC = "send_ircc"
 SERVICE_SET_AUDIO_OUTPUT = "set_audio_output"
 SERVICE_BLANK_SCREEN = "blank_screen"
 SERVICE_GET_INSTALLED_APPS = "get_installed_apps"
+SERVICE_OPEN_URL = "open_url"
 
 # Service schemas
 SERVICE_OPEN_APP_SCHEMA = vol.Schema(
@@ -86,6 +87,13 @@ SERVICE_BLANK_SCREEN_SCHEMA = vol.Schema(
 SERVICE_GET_INSTALLED_APPS_SCHEMA = vol.Schema(
     {
         vol.Required("entity_id"): cv.entity_id,
+    }
+)
+
+SERVICE_OPEN_URL_SCHEMA = vol.Schema(
+    {
+        vol.Required("entity_id"): cv.entity_id,
+        vol.Required("url"): cv.url,
     }
 )
 
@@ -184,6 +192,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             SERVICE_SET_AUDIO_OUTPUT,
             SERVICE_BLANK_SCREEN,
             SERVICE_GET_INSTALLED_APPS,
+            SERVICE_OPEN_URL,
         ):
             hass.services.async_remove(DOMAIN, service)
 
@@ -301,6 +310,19 @@ def _register_services(hass: HomeAssistant) -> None:
             len(coordinator.data.app_list) if coordinator.data else 0,
         )
 
+    async def handle_open_url(call: ServiceCall) -> None:
+        """Handle the open_url service."""
+        coordinator = _get_coordinator(hass, call.data["entity_id"])
+        if coordinator is None:
+            _LOGGER.error("No Bravia REST API device found")
+            return
+
+        url = call.data["url"]
+        try:
+            await coordinator.client.open_url(url)
+        except BraviaError as err:
+            _LOGGER.error("Failed to open URL '%s': %s", url, err)
+
     hass.services.async_register(
         DOMAIN, SERVICE_OPEN_APP, handle_open_app, schema=SERVICE_OPEN_APP_SCHEMA
     )
@@ -324,4 +346,10 @@ def _register_services(hass: HomeAssistant) -> None:
         SERVICE_GET_INSTALLED_APPS,
         handle_get_installed_apps,
         schema=SERVICE_GET_INSTALLED_APPS_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_OPEN_URL,
+        handle_open_url,
+        schema=SERVICE_OPEN_URL_SCHEMA,
     )
